@@ -45,6 +45,7 @@
 ```json```<br>
 2. 白名单设置
 以**集合Set**形式存储店员的track_id，实现高效白名单查找，时间复杂度**O（1）**
+* 存储形式，采用文件存储或Redis持久化存储<br>
 ```python```<br>
 white_list_set = {white_track_id1, white_track_id2, ... ,white_track_idn}<br>
 if id **in** white_list_set:<br>
