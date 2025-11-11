@@ -50,9 +50,10 @@ white_list_set = {white_track_id1, white_track_id2, ... ,white_track_idn}<br>
 if id **in** white_list_set:<br>
    &emsp;// 店员<br>
 else:<br>
-   &emsp;// 不是电源<br>
+   &emsp;// 不是店员<br>
 ```python```<br>
 3. 进出门逻辑
-* 指定进门方向，left or right
-* 查找每个识别框列表中的单调序列，递增为进门，递减为出门（或相反，根据进门方向）
-  > 讨论，异常数据处理，连续几个递增确保有效；时间确保有效；设置进门坐标阈值；
+* 设置门的位置，及进门方向，left or right
+* 查找每个识别框列表中的单调序列，递增大于阈值为进门，递减小于阈值为出门（或相反，门的状态）
+4. 进门情况示意图
+![进门情况示意图](示意图-1.png)
