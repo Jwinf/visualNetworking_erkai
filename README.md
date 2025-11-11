@@ -34,3 +34,25 @@
 }<br>
 ```json```
 ## 数据处理
+1. map（映射处理）<br>
+将数据处理为以**track_id**为key，以**识别框x1**位置列表为value的map<br>
+```json```
+{<br>
+    &emsp;"track_id1":&ensp;["x_11","x_12","x_13",...,"x_1n"],<br>
+    &emsp;"track_id2":&ensp;["x_21","x_22","x_23",...,"x_2n"],<br>
+    &emsp;...<br>
+}
+```json```<br>
+2. 白名单设置
+以**集合Set**形式存储店员的track_id，实现高效白名单查找，时间复杂度**O（1）**
+```python```<br>
+white_list_set = {white_track_id1, white_track_id2, ... ,white_track_idn}<br>
+if id **in** white_list_set:<br>
+   &emsp;// 店员<br>
+else:<br>
+   &emsp;// 不是电源<br>
+```python```<br>
+3. 进出门逻辑
+* 指定进门方向，left or right
+* 查找每个识别框列表中的单调序列，递增为进门，递减为出门（或相反，根据进门方向）
+  > 讨论，异常数据处理，连续几个递增确保有效；时间确保有效；设置进门坐标阈值；
