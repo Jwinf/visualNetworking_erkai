@@ -52,7 +52,7 @@ def compact(input_file, output_file):
         print(f"错误: {str(e)}")
 
 
-def get_point_x_list_by_state(feature_map, state=0):
+def get_point_x_list_by_state(feature_map, track_id, state=0):
     
     """
     param: feature_map 数据字典<track_id, seq>; state 场景状态[0,3]
@@ -63,16 +63,14 @@ def get_point_x_list_by_state(feature_map, state=0):
     op_seq = []
     match state:
         case 0 | 1:
-            for track_id, frame_list in feature_map.items():
-                for f_index, frame in enumerate(frame_list):
-                    if len(frame) > 0 and len(frame[0]) > 0:
-                        op_seq.append([frame[0][0], f_index])
+            for f_index, frame in enumerate(feature_map[track_id]):
+                if len(frame) > 0 and len(frame[0]) > 0:
+                    op_seq.append([frame[0][0], f_index])
         
         case 2 | 3:
-             for track_id, frame_list in feature_map.items():
-                for f_index, frame in enumerate(frame_list):
-                    if len(frame) > 1 and len(frame[1]) > 0:
-                        op_seq.append([frame[1][0], f_index])
+            for f_index, frame in enumerate(feature_map[track_id]):
+                if len(frame) > 1 and len(frame[1]) > 0:
+                    op_seq.append([frame[1][0], f_index])
         case _:
             print(f"{Colors.RED}{Colors.BOLD}Error: state code error, please input the right state code [0,3].{Colors.END}")
             return
