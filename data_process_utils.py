@@ -64,15 +64,15 @@ def get_point_x_list_by_state(feature_map, state=0):
     match state:
         case 0 | 1:
             for track_id, frame_list in feature_map.items():
-                for frame in frame_list:
+                for f_index, frame in enumerate(frame_list):
                     if len(frame) > 0 and len(frame[0]) > 0:
-                        op_seq.append(frame[0][0])
+                        op_seq.append([frame[0][0], f_index])
         
         case 2 | 3:
              for track_id, frame_list in feature_map.items():
-                for frame in frame_list:
+                for f_index, frame in enumerate(frame_list):
                     if len(frame) > 1 and len(frame[1]) > 0:
-                        op_seq.append(frame[1][0])
+                        op_seq.append([frame[1][0], f_index])
         case _:
             print(f"{Colors.RED}{Colors.BOLD}Error: state code error, please input the right state code [0,3].{Colors.END}")
             return
