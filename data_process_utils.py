@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from colors import Colors
 
 def compact(input_file, output_file):
     """
@@ -50,6 +51,34 @@ def compact(input_file, output_file):
     except Exception as e:
         print(f"错误: {str(e)}")
 
+
+def get_point_x_list_by_state(feature_map, state=0):
+    
+    """
+    param: feature_map 数据字典<track_id, seq>; state 场景状态[0,3]
+    state=0或1，获取p1横坐标列表；
+    state=2或3，获取p2横坐标列表
+    return 返回识别框指定点横坐标列表
+    """
+    op_seq = []
+    match state:
+        case 0 | 1:
+            for track_id, frame_list in feature_map.items():
+                for frame in frame_list:
+                    if len(frame) > 0 and len(frame[0]) > 0:
+                        op_seq.append(frame[0][0])
+        
+        case 2 | 3:
+             for track_id, frame_list in feature_map.items():
+                for frame in frame_list:
+                    if len(frame) > 1 and len(frame[1]) > 0:
+                        op_seq.append(frame[1][0])
+        case _:
+            print(f"{Colors.RED}{Colors.BOLD}Error: state code error, please input the right state code [0,3].{Colors.END}")
+            return
+    
+    return op_seq
+
 def find_monotonic_sequence(sequence, start_index=0):
     """
     在整数序列中查找从指定位置开始的第一个单调序列
@@ -81,9 +110,9 @@ def find_monotonic_sequence(sequence, start_index=0):
     current_start = start_index
     
     # 检查前两个元素的关系来确定初始单调性
-    if sequence[start_index] < sequence[start_index + 1]:
+    if sequence[start_index][0] < sequence[start_index + 1][0]:
         monotonic_type = 'increasing'
-    elif sequence[start_index] > sequence[start_index + 1]:
+    elif sequence[start_index][0] > sequence[start_index + 1][0]:
         monotonic_type = 'decreasing'
     else:
         monotonic_type = 'equal'
@@ -92,23 +121,23 @@ def find_monotonic_sequence(sequence, start_index=0):
     i = start_index + 2
     while i < n:
         if monotonic_type == 'increasing':
-            if sequence[i] >= sequence[i - 1]:
+            if sequence[i][0] >= sequence[i - 1][0]:
                 # 继续保持递增
                 pass
             else:
                 # 单调性改变，结束当前序列
                 break
         elif monotonic_type == 'decreasing':
-            if sequence[i] <= sequence[i - 1]:
+            if sequence[i][0] <= sequence[i - 1][0]:
                 # 继续保持递减
                 pass
             else:
                 # 单调性改变，结束当前序列
                 break
         elif monotonic_type == 'equal':
-            if sequence[i] > sequence[i - 1]:
+            if sequence[i][0] > sequence[i - 1][0]:
                 monotonic_type = 'increasing'
-            elif sequence[i] < sequence[i - 1]:
+            elif sequence[i][0] < sequence[i - 1][0]:
                 monotonic_type = 'decreasing'
             # 如果继续相等，保持 'equal'
         
@@ -118,54 +147,3 @@ def find_monotonic_sequence(sequence, start_index=0):
     end_index = i - 1
     
     return current_start, end_index, monotonic_type
-
-
-# 测试函数
-def test_monotonic_sequence():
-    """测试函数"""
-    test_cases = [
-        # (序列, 起始索引, 期望结果)
-        ([1, 2, 3, 4, 5], 0, (0, 4, 'increasing')),      # 整个序列递增
-        ([5, 4, 3, 2, 1], 0, (0, 4, 'decreasing')),      # 整个序列递减
-        ([1, 1, 1, 1, 1], 0, (0, 4, 'equal')),           # 整个序列相等
-        ([1, 2, 3, 2, 1], 0, (0, 2, 'increasing')),      # 先增后减
-        ([5, 4, 3, 4, 5], 0, (0, 2, 'decreasing')),      # 先减后增
-        ([1, 2, 2, 3, 4], 0, (0, 4, 'increasing')),      # 非严格递增
-        ([], 0, (-1, -1, 'none')),                       # 空序列
-        ([1], 0, (0, 0, 'equal')),                       # 单元素序列
-        ([1, 2, 3, 2, 1], 2, (2, 4, 'decreasing')),      # 从中间开始
-    ]
-    
-    print("测试 find_monotonic_sequence:")
-    for i, (seq, start, expected) in enumerate(test_cases):
-        result = find_monotonic_sequence(seq, start)
-        status = "✓" if result == expected else "✗"
-        print(f"测试 {i+1}: {status} 序列: {seq}, 起始: {start}")
-        print(f"  期望: {expected}, 实际: {result}")
-        print()
-    
-
-
-# 使用示例
-if __name__ == "__main__":
-    # 运行测试
-    test_monotonic_sequence()
-    
-    print("\n" + "="*50)
-    print("使用示例:")
-    
-    # 示例1: 基本使用
-    sequence1 = [1, 2, 3, 1, 1, 1, 1, 1]
-    start1, end1, type1 = find_monotonic_sequence(sequence1, 0)
-    print(f"序列: {sequence1}")
-    print(f"从位置0开始: 单调序列 [{start1}:{end1}] = {sequence1[start1:end1+1]}, 类型: {type1}")
-    
-    # 示例2: 从中间位置开始
-    start2, end2, type2 = find_monotonic_sequence(sequence1, 3)
-    print(f"从位置3开始: 单调序列 [{start2}:{end2}] = {sequence1[start2:end2+1]}, 类型: {type2}")
-    
-    # 示例3: 递减序列
-    sequence2 = [5, 4, 3, 2, 1, 2, 3]
-    start3, end3, type3 = find_monotonic_sequence(sequence2, 0)
-    print(f"序列: {sequence2}")
-    print(f"从位置0开始: 单调序列 [{start3}:{end3}] = {sequence2[start3:end3+1]}, 类型: {type3}")
