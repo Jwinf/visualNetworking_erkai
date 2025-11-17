@@ -1,0 +1,10 @@
+POST {{protocol}}://{{host}}:{{port}}{{apiPrefix}}/set
+Content-Type: application/json
+
+{
+  "x1": 10,
+  "y1": 20,
+  "x2": 5,
+  "y2": 23,
+  "state": 2
+}
