@@ -2,4 +2,4 @@
 *.json
 
 # pycache file
-__pycache__/*
+**/__pycache__/*

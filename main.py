@@ -1,5 +1,5 @@
-from data_process_utils import compact, get_point_x_list_by_state, find_monotonic_sequence
-from colors import Colors
+from util.data_process_utils import compact, get_point_x_list_by_state, find_monotonic_sequence
+from const.colors_enum import Colors
 
 RED = '\033[91m'
 GREEN = '\033[92m'

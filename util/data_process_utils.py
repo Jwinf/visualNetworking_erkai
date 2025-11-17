@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from colors import Colors
+from const.colors_enum import Colors
 
 def compact(input_file, output_file):
     """
