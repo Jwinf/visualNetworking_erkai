@@ -1,6 +1,7 @@
 import json
 from collections import defaultdict
 from const.colors_enum import Colors
+from const.monotonic_type_enum import Monotonic
 
 def compact(input_file, output_file):
     """
@@ -27,7 +28,7 @@ def compact(input_file, output_file):
                     box = item['box']
                     result[reid].append(box)
                 else:
-                    print(f"警告: 跳过格式不正确的数据项: {item}")
+                    print(f"{Colors.YELLOW.value}警告: 跳过格式不正确的数据项: {item}{Colors.END.value}")
         else:
             print("错误: 不支持的JSON格式")
             return
@@ -39,17 +40,17 @@ def compact(input_file, output_file):
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(result_dict, f, ensure_ascii=False, indent=2)
         
-        print(f"转换完成! 输入文件: {input_file} -> 输出文件: {output_file}")
+        print(f"{Colors.GREEN.value}转换完成!{Colors.END.value} 输入文件: {input_file} -> 输出文件: {output_file}")
         print(f"处理了 {len(result_dict)} 个不同的reid")
         
         return result_dict
         
     except FileNotFoundError:
-        print(f"错误: 文件 {input_file} 不存在")
+        print(f"{Colors.RED.value}错误: 文件 {input_file} 不存在{Colors.END.value}")
     except json.JSONDecodeError:
-        print(f"错误: 文件 {input_file} 不是有效的JSON格式")
+        print(f"{Colors.RED.value}错误: 文件 {input_file} 不是有效的JSON格式{Colors.END.value}")
     except Exception as e:
-        print(f"错误: {str(e)}")
+        print(f"{Colors.RED.value}错误: {str(e)}{Colors.END.value}")
 
 
 def get_point_x_list_by_state(feature_map, track_id, state=0):
@@ -95,48 +96,48 @@ def find_monotonic_sequence(sequence, start_index=0):
     
     # 处理边界情况
     if n == 0:
-        return -1, -1, 'none'
+        return -1, -1, Monotonic.NONE
     
     if start_index >= n:
-        return -1, -1, 'none'
+        return -1, -1, Monotonic.NONE
     
     # 如果从起始位置开始只剩一个元素
     if start_index == n - 1:
-        return start_index, start_index, 'equal'
+        return start_index, start_index, Monotonic.EQUAL
     
     # 检查单调性
     current_start = start_index
     
     # 检查前两个元素的关系来确定初始单调性
     if sequence[start_index][0] < sequence[start_index + 1][0]:
-        monotonic_type = 'increasing'
+        monotonic_type = Monotonic.INCREASING
     elif sequence[start_index][0] > sequence[start_index + 1][0]:
-        monotonic_type = 'decreasing'
+        monotonic_type = Monotonic.DECREASING
     else:
-        monotonic_type = 'equal'
+        monotonic_type = Monotonic.EQUAL
     
     # 从第三个元素开始继续检查
     i = start_index + 2
     while i < n:
-        if monotonic_type == 'increasing':
+        if monotonic_type == Monotonic.INCREASING:
             if sequence[i][0] >= sequence[i - 1][0]:
                 # 继续保持递增
                 pass
             else:
                 # 单调性改变，结束当前序列
                 break
-        elif monotonic_type == 'decreasing':
+        elif monotonic_type == Monotonic.DECREASING:
             if sequence[i][0] <= sequence[i - 1][0]:
                 # 继续保持递减
                 pass
             else:
                 # 单调性改变，结束当前序列
                 break
-        elif monotonic_type == 'equal':
+        elif monotonic_type == Monotonic.EQUAL:
             if sequence[i][0] > sequence[i - 1][0]:
-                monotonic_type = 'increasing'
+                monotonic_type = Monotonic.INCREASING
             elif sequence[i][0] < sequence[i - 1][0]:
-                monotonic_type = 'decreasing'
+                monotonic_type = Monotonic.DECREASING
             # 如果继续相等，保持 'equal'
         
         i += 1
