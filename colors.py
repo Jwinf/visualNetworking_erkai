@@ -8,4 +8,4 @@ class Colors:
     WHITE = '\033[97m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
-    END = '\033[0m'  # 重置所有样式
+    END = '\033[0m'  

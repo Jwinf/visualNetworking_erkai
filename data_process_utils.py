@@ -145,3 +145,16 @@ def find_monotonic_sequence(sequence, start_index=0):
     end_index = i - 1
     
     return current_start, end_index, monotonic_type
+
+def is_point_above_line_vector(x1, y1, x2, y2, x3, y3, tolerance=1e-10):
+    """
+    使用向量叉积判断点是否在线段上方或线上
+    点的坐标（x1, y1）
+    门的两个端点(x2, y2), (x3, y3)
+    """
+    # 计算向量叉积
+    cross_product = (x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)
+    
+    # 如果叉积 >= 0，点在线上或上方（对于标准的数学坐标系）
+    # 注意：在计算机图形学中，y轴通常是向下的，所以符号可能需要调整
+    return cross_product >= -tolerance
