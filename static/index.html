@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>基于计算视觉的客流分析</title>
+    <title>图片坐标选取工具与数据看板 - 商家名称集成版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -384,26 +384,120 @@
         }
         
         .instructions {
+            width: 100%;
             margin-top: 20px;
-            padding: 15px;
+            padding: 25px;
             background-color: #e8f4fd;
             border-left: 4px solid #2575fc;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
         }
         
         .action-buttons {
             display: flex;
             gap: 10px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
         
         .action-buttons button {
             flex: 1;
+            min-width: 120px;
         }
         
         #reset-btn {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+        
+        #submit-data-btn {
+            background: linear-gradient(135deg, #2ed573 0%, #1ed96f 100%);
+        }
+        
+        #submit-data-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        #submit-data-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .point-status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .point-status.incomplete {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .point-status.complete {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* 商家名称输入框样式 */
+        .merchant-input-container {
+            position: relative;
+        }
+        
+        .merchant-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .merchant-suggestion {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .merchant-suggestion:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .merchant-suggestion.active {
+            background-color: #e9ecef;
         }
         
         /* 数据看板样式 */
@@ -496,6 +590,61 @@
             color: white;
         }
         
+        /* 提示框样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease-in-out;
+            max-width: 400px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #2ed573 0%, #1ed96f 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+        }
+        
+        .notification.warning {
+            background: linear-gradient(135deg, #ffa502 0%, #ff9f1a 100%);
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, #2f3542 0%, #57606f 100%);
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification-icon {
+            font-size: 20px;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -520,18 +669,24 @@
             .dashboard-content {
                 flex-direction: column;
             }
+            
+            .notification {
+                left: 20px;
+                right: 20px;
+                max-width: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>基于计算视觉的客流分析</h1>
-            <p class="subtitle">参数配置与进出人数可视化分析</p>
+            <h1>图片坐标选取工具与数据看板 - 商家名称集成版</h1>
+            <p class="subtitle">坐标选取与进出人数可视化分析</p>
         </header>
         
         <div class="tab-menu">
-            <button class="tab-button active" data-tab="coordinate-tool">参数配置</button>
+            <button class="tab-button active" data-tab="coordinate-tool">坐标选取工具</button>
             <button class="tab-button" data-tab="dashboard">数据看板</button>
         </div>
         
@@ -561,10 +716,29 @@
                         <img id="target-image" style="display: none;" alt="目标图片">
                     </div>
                 </div>
+                
+                <!-- 将JSON数据板块移到图片下方 -->
+                <div class="data-section">
+                    <h3>生成的JSON数据</h3>
+                    <div class="json-output" id="json-output">
+                        // 数据将在这里显示
+                    </div>
+                </div>
             </div>
             
             <div class="control-section">
                 <div class="control-panel">
+                    <!-- 商家名称输入框 -->
+                    <div class="form-group">
+                        <label for="merchant-name">商家名称</label>
+                        <div class="merchant-input-container">
+                            <input type="text" id="merchant-name" placeholder="选择或输入商家名称">
+                            <div class="merchant-suggestions" id="merchant-suggestions">
+                                <!-- 商家建议将动态添加到这里 -->
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="point1">第一个点坐标</label>
                         <div class="coordinates">
@@ -603,28 +777,35 @@
                     
                     <button id="submit-btn">生成JSON数据</button>
                     
+                    <!-- 点选择状态指示器 -->
+                    <div class="point-status incomplete" id="point-status">
+                        <span class="point-status-icon">⚠️</span>
+                        <span id="point-status-text">请选择两个点并输入商家名称以启用提交功能</span>
+                    </div>
+                    
                     <div class="action-buttons">
                         <button id="reset-btn">重置坐标点</button>
                         <button id="copy-btn">复制JSON</button>
+                        <button id="submit-data-btn" disabled>提交数据</button>
                     </div>
                 </div>
-                
-                <div class="data-section">
-                    <h3>生成的JSON数据</h3>
-                    <div class="json-output" id="json-output">
-                        // 数据将在这里显示
-                    </div>
-                </div>
-                
-                <div class="instructions">
-                    <p><strong>使用说明：</strong></p>
-                    <p>1. 通过"选择本地图片"或"通过URL加载"按钮加载图片</p>
-                    <p>2. 点击图片选择第一个坐标点</p>
-                    <p>3. 点击图片选择第二个坐标点</p>
-                    <p>4. 将鼠标悬停在点上可查看坐标信息</p>
-                    <p>5. 从下拉菜单中选择方向</p>
-                    <p>6. 点击"生成JSON数据"按钮</p>
-                </div>
+            </div>
+            
+            <!-- 使用说明放在最下方 -->
+            <div class="instructions">
+                <h3>使用说明</h3>
+                <ol>
+                    <li><strong>加载图片</strong>：通过"选择本地图片"按钮从您的设备中选择图片，或通过"通过URL加载"按钮输入图片URL地址加载图片。</li>
+                    <li><strong>输入商家名称</strong>：在商家名称输入框中输入商家名称，或从下拉建议中选择一个商家名称。</li>
+                    <li><strong>选择坐标点</strong>：在图片上点击选择第一个坐标点（红色标记），再次点击选择第二个坐标点（绿色标记）。</li>
+                    <li><strong>查看坐标信息</strong>：将鼠标悬停在已选择的点上可以查看该点的坐标信息。</li>
+                    <li><strong>选择方向</strong>：从下拉菜单中选择方向（向上、向下、向左或向右）。</li>
+                    <li><strong>生成JSON数据</strong>：点击"生成JSON数据"按钮将商家名称、坐标点和方向信息转换为JSON格式。</li>
+                    <li><strong>提交数据</strong>：当您选择了两个点并输入了商家名称后，"提交数据"按钮将启用，点击可将数据提交到后端服务器。</li>
+                    <li><strong>数据验证</strong>：系统会验证您是否已选择两个点并输入商家名称，未完成时将无法提交数据。</li>
+                    <li><strong>重置操作</strong>：如需重新选择点，可点击"重置坐标点"按钮清除当前选择。</li>
+                </ol>
+                <p><strong>注意事项</strong>：确保选择的图片清晰可见，坐标点应准确标记在您需要的位置。提交数据后，系统会根据后端响应显示相应的提示信息。</p>
             </div>
         </div>
         
@@ -680,6 +861,15 @@
         </div>
     </div>
 
+    <!-- 提示框 -->
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <span class="notification-icon" id="notification-icon">ℹ️</span>
+            <span id="notification-message">这是一条提示信息</span>
+            <button class="notification-close" id="notification-close">✕</button>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Tab切换功能
@@ -720,6 +910,9 @@
             const imageContainer = document.querySelector('.image-container');
             const imageContainerWrapper = document.querySelector('.image-container-wrapper');
             
+            const merchantNameInput = document.getElementById('merchant-name');
+            const merchantSuggestions = document.getElementById('merchant-suggestions');
+            
             const point1X = document.getElementById('point1-x');
             const point1Y = document.getElementById('point1-y');
             const point2X = document.getElementById('point2-x');
@@ -728,7 +921,10 @@
             const submitBtn = document.getElementById('submit-btn');
             const resetBtn = document.getElementById('reset-btn');
             const copyBtn = document.getElementById('copy-btn');
+            const submitDataBtn = document.getElementById('submit-data-btn');
             const jsonOutput = document.getElementById('json-output');
+            const pointStatus = document.getElementById('point-status');
+            const pointStatusText = document.getElementById('point-status-text');
             
             let points = {
                 point1: null,
@@ -736,6 +932,129 @@
             };
             let currentPoint = 1;
             let tooltips = {};
+            
+            // 商家名称数据
+            const merchantNames = [
+                "北京王府井百货",
+                "上海南京路步行街",
+                "广州天河城",
+                "深圳华强北电子市场",
+                "成都春熙路",
+                "重庆解放碑",
+                "武汉汉正街",
+                "西安钟楼商场",
+                "杭州西湖银泰",
+                "南京新街口"
+            ];
+            
+            // 初始化商家名称建议
+            function initializeMerchantSuggestions() {
+                merchantNames.forEach(name => {
+                    const suggestion = document.createElement('div');
+                    suggestion.className = 'merchant-suggestion';
+                    suggestion.textContent = name;
+                    suggestion.addEventListener('click', function() {
+                        merchantNameInput.value = name;
+                        hideMerchantSuggestions();
+                        updateSubmitStatus();
+                    });
+                    merchantSuggestions.appendChild(suggestion);
+                });
+            }
+            
+            // 显示商家名称建议
+            function showMerchantSuggestions() {
+                merchantSuggestions.style.display = 'block';
+            }
+            
+            // 隐藏商家名称建议
+            function hideMerchantSuggestions() {
+                merchantSuggestions.style.display = 'none';
+            }
+            
+            // 过滤商家名称建议
+            function filterMerchantSuggestions(query) {
+                const suggestions = document.querySelectorAll('.merchant-suggestion');
+                let hasMatch = false;
+                
+                suggestions.forEach(suggestion => {
+                    if (suggestion.textContent.toLowerCase().includes(query.toLowerCase())) {
+                        suggestion.style.display = 'block';
+                        hasMatch = true;
+                    } else {
+                        suggestion.style.display = 'none';
+                    }
+                });
+                
+                return hasMatch;
+            }
+            
+            // 更新提交状态
+            function updateSubmitStatus() {
+                const merchantName = merchantNameInput.value.trim();
+                
+                if (points.point1 && points.point2 && merchantName) {
+                    // 两个点都已选择且商家名称已输入
+                    pointStatus.className = 'point-status complete';
+                    pointStatusText.textContent = '已选择两个点并输入商家名称，可以提交数据';
+                    submitDataBtn.disabled = false;
+                } else if (points.point1 && points.point2) {
+                    // 只选择两个点，但未输入商家名称
+                    pointStatus.className = 'point-status incomplete';
+                    pointStatusText.textContent = '已选择两个点，请输入商家名称';
+                    submitDataBtn.disabled = true;
+                } else if (points.point1) {
+                    // 只选择了一个点
+                    pointStatus.className = 'point-status incomplete';
+                    pointStatusText.textContent = '已选择第一个点，请选择第二个点';
+                    submitDataBtn.disabled = true;
+                } else {
+                    // 没有选择点
+                    pointStatus.className = 'point-status incomplete';
+                    pointStatusText.textContent = '请选择两个点并输入商家名称以启用提交功能';
+                    submitDataBtn.disabled = true;
+                }
+            }
+            
+            // 商家名称输入事件
+            merchantNameInput.addEventListener('input', function() {
+                const query = this.value;
+                if (query.length > 0) {
+                    const hasMatch = filterMerchantSuggestions(query);
+                    if (hasMatch) {
+                        showMerchantSuggestions();
+                    } else {
+                        hideMerchantSuggestions();
+                    }
+                } else {
+                    hideMerchantSuggestions();
+                }
+                updateSubmitStatus();
+            });
+            
+            // 商家名称焦点事件
+            merchantNameInput.addEventListener('focus', function() {
+                if (this.value.length > 0) {
+                    const hasMatch = filterMerchantSuggestions(this.value);
+                    if (hasMatch) {
+                        showMerchantSuggestions();
+                    }
+                } else {
+                    // 显示所有建议
+                    const suggestions = document.querySelectorAll('.merchant-suggestion');
+                    suggestions.forEach(suggestion => {
+                        suggestion.style.display = 'block';
+                    });
+                    showMerchantSuggestions();
+                }
+            });
+            
+            // 点击页面其他地方隐藏商家名称建议
+            document.addEventListener('click', function(e) {
+                if (!merchantNameInput.contains(e.target) && !merchantSuggestions.contains(e.target)) {
+                    hideMerchantSuggestions();
+                }
+            });
             
             // 切换URL输入框显示
             urlToggleBtn.addEventListener('click', function() {
@@ -766,7 +1085,7 @@
                 if (url) {
                     loadImage(url);
                 } else {
-                    alert('请输入有效的图片URL');
+                    showNotification('请输入有效的图片URL', 'warning');
                 }
             });
             
@@ -787,6 +1106,7 @@
                 image.onerror = function() {
                     imagePlaceholder.textContent = '图片加载失败，请检查URL或选择其他图片';
                     image.style.display = 'none';
+                    showNotification('图片加载失败，请检查URL或选择其他图片', 'error');
                 };
                 
                 image.src = src;
@@ -831,6 +1151,9 @@
                     currentPoint = 1;
                     addPointMarker(x, y, 2);
                 }
+                
+                // 更新提交状态
+                updateSubmitStatus();
             });
             
             // 添加坐标点标记
@@ -944,13 +1267,22 @@
                 tooltips = {};
                 
                 jsonOutput.textContent = '// 数据将在这里显示';
+                
+                // 更新提交状态
+                updateSubmitStatus();
             }
             
             // 提交按钮点击事件
             submitBtn.addEventListener('click', function() {
                 // 验证数据
                 if (!points.point1 || !points.point2) {
-                    alert('请先在图片上选择两个点！');
+                    showNotification('请先在图片上选择两个点！', 'warning');
+                    return;
+                }
+                
+                const merchantName = merchantNameInput.value.trim();
+                if (!merchantName) {
+                    showNotification('请输入商家名称！', 'warning');
                     return;
                 }
                 
@@ -959,6 +1291,7 @@
                 
                 // 创建JSON数据
                 const jsonData = {
+                    merchant: merchantName,
                     point1: points.point1,
                     point2: points.point2,
                     direction: direction
@@ -966,6 +1299,8 @@
                 
                 // 显示JSON数据
                 jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
+                
+                showNotification('JSON数据生成成功！', 'success');
             });
             
             // 重置按钮点击事件
@@ -974,19 +1309,130 @@
             // 复制按钮点击事件
             copyBtn.addEventListener('click', function() {
                 if (jsonOutput.textContent === '// 数据将在这里显示') {
-                    alert('请先生成JSON数据！');
+                    showNotification('请先生成JSON数据！', 'warning');
                     return;
                 }
                 
                 navigator.clipboard.writeText(jsonOutput.textContent)
                     .then(() => {
-                        alert('JSON数据已复制到剪贴板！');
+                        showNotification('JSON数据已复制到剪贴板！', 'success');
                     })
                     .catch(err => {
                         console.error('复制失败: ', err);
-                        alert('复制失败，请手动复制文本');
+                        showNotification('复制失败，请手动复制文本', 'error');
                     });
             });
+            
+            // 提交数据按钮点击事件
+            submitDataBtn.addEventListener('click', function() {
+                if (!points.point1 || !points.point2) {
+                    showNotification('请先在图片上选择两个点！', 'warning');
+                    return;
+                }
+                
+                const merchantName = merchantNameInput.value.trim();
+                if (!merchantName) {
+                    showNotification('请输入商家名称！', 'warning');
+                    return;
+                }
+                
+                if (jsonOutput.textContent === '// 数据将在这里显示') {
+                    showNotification('请先生成JSON数据！', 'warning');
+                    return;
+                }
+                
+                // 获取JSON数据
+                const jsonData = jsonOutput.textContent;
+                
+                // 显示提交中状态
+                submitDataBtn.disabled = true;
+                submitDataBtn.textContent = '提交中...';
+                
+                // 模拟向后端提交数据
+                // 在实际应用中，这里应该替换为真实的API端点
+                simulateBackendSubmit(jsonData)
+                    .then(response => {
+                        // 根据状态码显示不同的提示
+                        if (response.status >= 200 && response.status < 300) {
+                            showNotification('数据提交成功！', 'success');
+                        } else if (response.status >= 400 && response.status < 500) {
+                            showNotification('提交失败：客户端错误 ' + response.status, 'error');
+                        } else if (response.status >= 500) {
+                            showNotification('提交失败：服务器错误 ' + response.status, 'error');
+                        } else {
+                            showNotification('提交完成，状态码：' + response.status, 'info');
+                        }
+                    })
+                    .catch(error => {
+                        showNotification('提交失败：' + error.message, 'error');
+                    })
+                    .finally(() => {
+                        // 恢复按钮状态
+                        submitDataBtn.disabled = false;
+                        submitDataBtn.textContent = '提交数据';
+                    });
+            });
+            
+            // 模拟向后端提交数据
+            function simulateBackendSubmit(data) {
+                return new Promise((resolve, reject) => {
+                    // 模拟网络延迟
+                    setTimeout(() => {
+                        // 随机生成状态码来模拟不同响应
+                        const statusCodes = [200, 201, 400, 401, 403, 404, 500, 502];
+                        const randomStatus = statusCodes[Math.floor(Math.random() * statusCodes.length)];
+                        
+                        // 模拟成功或失败
+                        if (randomStatus < 300) {
+                            resolve({
+                                status: randomStatus,
+                                message: '数据提交成功'
+                            });
+                        } else {
+                            reject({
+                                status: randomStatus,
+                                message: '提交失败，状态码：' + randomStatus
+                            });
+                        }
+                    }, 1500);
+                });
+            }
+            
+            // 提示框功能
+            const notification = document.getElementById('notification');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationClose = document.getElementById('notification-close');
+            
+            // 显示提示框
+            function showNotification(message, type) {
+                // 设置消息和类型
+                notificationMessage.textContent = message;
+                notification.className = `notification ${type}`;
+                
+                // 设置图标
+                let icon = 'ℹ️';
+                if (type === 'success') icon = '✅';
+                else if (type === 'error') icon = '❌';
+                else if (type === 'warning') icon = '⚠️';
+                notificationIcon.textContent = icon;
+                
+                // 显示提示框
+                notification.classList.add('show');
+                
+                // 5秒后自动隐藏
+                setTimeout(() => {
+                    hideNotification();
+                }, 5000);
+            }
+            
+            // 隐藏提示框
+            function hideNotification() {
+                notification.classList.remove('show');
+            }
+            
+            // 点击关闭按钮隐藏提示框
+            notificationClose.addEventListener('click', hideNotification);
             
             // 窗口大小变化时重新调整容器大小
             window.addEventListener('resize', function() {
@@ -1182,7 +1628,6 @@
                 if (comparisonChart) {
                     comparisonChart.data.datasets[0].data = comparisonData;
                     comparisonChart.update();
-                    
                 }
                 
                 if (hourlyChart) {
@@ -1190,6 +1635,9 @@
                     hourlyChart.update();
                 }
             }
+            
+            // 初始化商家名称建议
+            initializeMerchantSuggestions();
         });
     </script>
 </body>
