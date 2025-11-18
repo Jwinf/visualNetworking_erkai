@@ -1,17 +1,15 @@
 from flask import Flask
+from config.config import config
+from config.config import get_config
 
-def create_app():
+def create_app(config_name=None):
     app = Flask(__name__)
     
     # 配置应用
-    app.config.update(
-    REDIS_HOST='localhost',
-    REDIS_PORT=6379,
-    REDIS_DB=0,
-    REDIS_PASSWORD=None,
-    REDIS_DECODE_RESPONSES=True,
-    REDIS_TIMEOUT=5
-    )
+    if config_name is None:
+        app.config.from_object(get_config())
+    else:
+        app.config.from_object(config[config_name])
     
     # 初始化扩展
     from app.extensions import redis_util
