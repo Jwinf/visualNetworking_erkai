@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片坐标选取工具与数据看板 - 商家名称集成版</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .tab-menu {
+            display: flex;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .tab-button {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-button.active {
+            color: #2575fc;
+            border-bottom: 3px solid #2575fc;
+            background-color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .image-section {
+            flex: 1;
+            min-width: 400px;
+            padding: 15px;
+        }
+        
+        .image-container-wrapper {
+            position: relative;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f9f9f9;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        
+        .image-container {
+            position: relative;
+            display: inline-block;
+            line-height: 0;
+        }
+        
+        #target-image {
+            max-width: 100%;
+            max-height: 80vh;
+            cursor: crosshair;
+            display: block;
+        }
+        
+        .point-marker {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .point-marker:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .point-1 {
+            background-color: #ff4757;
+        }
+        
+        .point-2 {
+            background-color: #2ed573;
+        }
+        
+        .point-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+        
+        .point-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .point-tooltip::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        
+        .point-tooltip.top {
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+        }
+        
+        .point-tooltip.top::after {
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 6px 0 6px;
+            border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+        }
+        
+        .point-tooltip.bottom {
+            transform: translate(-50%, 0);
+            margin-top: 10px;
+        }
+        
+        .point-tooltip.bottom::after {
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 6px 8px 6px;
+            border-color: transparent transparent rgba(0, 0, 0, 0.85) transparent;
+        }
+        
+        .point-tooltip.right {
+            transform: translate(0, -50%);
+            margin-left: 10px;
+        }
+        
+        .point-tooltip.right::after {
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 6px 8px 6px 0;
+            border-color: transparent rgba(0, 0, 0, 0.85) transparent transparent;
+        }
+        
+        .point-tooltip.left {
+            transform: translate(-100%, -50%);
+            margin-left: -10px;
+        }
+        
+        .point-tooltip.left::after {
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 6px 0 6px 8px;
+            border-color: transparent transparent transparent rgba(0, 0, 0, 0.85);
+        }
+        
+        .image-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #6c757d;
+            font-size: 16px;
+            z-index: 5;
+        }
+        
+        .image-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .file-upload-btn, .url-load-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .file-upload-btn:hover, .url-load-btn:hover {
+            background-color: #f8f9fa;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .url-input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #image-url {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        #load-url-btn {
+            padding: 10px 20px;
+            background-color: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        #load-url-btn:hover {
+            background-color: #1a68e8;
+        }
+        
+        .control-section {
+            flex: 1;
+            min-width: 300px;
+            padding: 15px;
+        }
+        
+        .control-panel {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+        
+        .coordinates {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .coordinate-group {
+            flex: 1;
+        }
+        
+        .direction-select {
+            position: relative;
+        }
+        
+        .direction-select::after {
+            content: "▼";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #6c757d;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(106, 17, 203, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .data-section {
+            margin-top: 25px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .json-output {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .instructions {
+            width: 100%;
+            margin-top: 20px;
+            padding: 25px;
+            background-color: #e8f4fd;
+            border-left: 4px solid #2575fc;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 15px;
+            color: #2575fc;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        #reset-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+        
+        #submit-data-btn {
+            background: linear-gradient(135deg, #2ed573 0%, #1ed96f 100%);
+        }
+        
+        #submit-data-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        #submit-data-btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .point-status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .point-status.incomplete {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .point-status.complete {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* 商家名称输入框样式 */
+        .merchant-input-container {
+            position: relative;
+        }
+        
+        .merchant-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        .merchant-suggestion {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .merchant-suggestion:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .merchant-suggestion.active {
+            background-color: #e9ecef;
+        }
+        
+        /* 数据看板样式 */
+        .dashboard {
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .dashboard-header h2 {
+            font-size: 24px;
+            color: #2575fc;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .chart-container {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+            text-align: center;
+        }
+        
+        .stats-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .time-filter {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .time-btn {
+            padding: 8px 16px;
+            background-color: #e9ecef;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .time-btn.active {
+            background-color: #2575fc;
+            color: white;
+        }
+        
+        /* 提示框样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease-in-out;
+            max-width: 400px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #2ed573 0%, #1ed96f 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+        }
+        
+        .notification.warning {
+            background: linear-gradient(135deg, #ffa502 0%, #ff9f1a 100%);
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, #2f3542 0%, #57606f 100%);
+        }
+        
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification-icon {
+            font-size: 20px;
+        }
+        
+        .notification-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .image-section, .control-section {
+                min-width: 100%;
+            }
+            
+            .image-controls {
+                flex-direction: column;
+            }
+            
+            .url-input-container {
+                flex-direction: column;
+            }
+            
+            .tab-content.active {
+                flex-direction: column;
+            }
+            
+            .dashboard-content {
+                flex-direction: column;
+            }
+            
+            .notification {
+                left: 20px;
+                right: 20px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>图片坐标选取工具与数据看板 - 商家名称集成版</h1>
+            <p class="subtitle">坐标选取与进出人数可视化分析</p>
+        </header>
+        
+        <div class="tab-menu">
+            <button class="tab-button active" data-tab="coordinate-tool">坐标选取工具</button>
+            <button class="tab-button" data-tab="dashboard">数据看板</button>
+        </div>
+        
+        <div id="coordinate-tool" class="tab-content active">
+            <div class="image-section">
+                <div class="image-controls">
+                    <label for="file-input" class="file-upload-btn">
+                        📁 选择本地图片
+                    </label>
+                    <input type="file" id="file-input" accept="image/*">
+                    
+                    <button class="url-load-btn" id="url-toggle-btn">
+                        🌐 通过URL加载
+                    </button>
+                </div>
+                
+                <div class="url-input-container" id="url-input-container" style="display: none;">
+                    <input type="text" id="image-url" placeholder="输入图片URL">
+                    <button id="load-url-btn">加载</button>
+                </div>
+                
+                <div class="image-container-wrapper">
+                    <div class="image-container">
+                        <div class="image-loading" id="image-placeholder">
+                            请选择或加载图片
+                        </div>
+                        <img id="target-image" style="display: none;" alt="目标图片">
+                    </div>
+                </div>
+                
+                <!-- 将JSON数据板块移到图片下方 -->
+                <div class="data-section">
+                    <h3>生成的JSON数据</h3>
+                    <div class="json-output" id="json-output">
+                        // 数据将在这里显示
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <div class="control-panel">
+                    <!-- 商家名称输入框 -->
+                    <div class="form-group">
+                        <label for="merchant-name">商家名称</label>
+                        <div class="merchant-input-container">
+                            <input type="text" id="merchant-name" placeholder="选择或输入商家名称">
+                            <div class="merchant-suggestions" id="merchant-suggestions">
+                                <!-- 商家建议将动态添加到这里 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="point1">第一个点坐标</label>
+                        <div class="coordinates">
+                            <div class="coordinate-group">
+                                <input type="text" id="point1-x" placeholder="X坐标" readonly>
+                            </div>
+                            <div class="coordinate-group">
+                                <input type="text" id="point1-y" placeholder="Y坐标" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="point2">第二个点坐标</label>
+                        <div class="coordinates">
+                            <div class="coordinate-group">
+                                <input type="text" id="point2-x" placeholder="X坐标" readonly>
+                            </div>
+                            <div class="coordinate-group">
+                                <input type="text" id="point2-y" placeholder="Y坐标" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="direction">选择方向</label>
+                        <div class="direction-select">
+                            <select id="direction">
+                                <option value="0">↑ 向上</option>
+                                <option value="1">↓ 向下</option>
+                                <option value="2">← 向左</option>
+                                <option value="3">→ 向右</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button id="submit-btn">生成JSON数据</button>
+                    
+                    <!-- 点选择状态指示器 -->
+                    <div class="point-status incomplete" id="point-status">
+                        <span class="point-status-icon">⚠️</span>
+                        <span id="point-status-text">请选择两个点并输入商家名称以启用提交功能</span>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button id="reset-btn">重置坐标点</button>
+                        <button id="copy-btn">复制JSON</button>
+                        <button id="submit-data-btn" disabled>提交数据</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 使用说明放在最下方 -->
+            <div class="instructions">
+                <h3>使用说明</h3>
+                <ol>
+                    <li><strong>加载图片</strong>：通过"选择本地图片"按钮从您的设备中选择图片，或通过"通过URL加载"按钮输入图片URL地址加载图片。</li>
+                    <li><strong>输入商家名称</strong>：在商家名称输入框中输入商家名称，或从下拉建议中选择一个商家名称。</li>
+                    <li><strong>选择坐标点</strong>：在图片上点击选择第一个坐标点（红色标记），再次点击选择第二个坐标点（绿色标记）。</li>
+                    <li><strong>查看坐标信息</strong>：将鼠标悬停在已选择的点上可以查看该点的坐标信息。</li>
+                    <li><strong>选择方向</strong>：从下拉菜单中选择方向（向上、向下、向左或向右）。</li>
+                    <li><strong>生成JSON数据</strong>：点击"生成JSON数据"按钮将商家名称、坐标点和方向信息转换为JSON格式。</li>
+                    <li><strong>提交数据</strong>：当您选择了两个点并输入了商家名称后，"提交数据"按钮将启用，点击可将数据提交到后端服务器。</li>
+                    <li><strong>数据验证</strong>：系统会验证您是否已选择两个点并输入商家名称，未完成时将无法提交数据。</li>
+                    <li><strong>重置操作</strong>：如需重新选择点，可点击"重置坐标点"按钮清除当前选择。</li>
+                </ol>
+                <p><strong>注意事项</strong>：确保选择的图片清晰可见，坐标点应准确标记在您需要的位置。提交数据后，系统会根据后端响应显示相应的提示信息。</p>
+            </div>
+        </div>
+        
+        <div id="dashboard" class="tab-content">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>进出人数数据看板</h2>
+                    <p>可视化分析区域人员流动情况</p>
+                </div>
+                
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-in">1,247</div>
+                        <div class="stat-label">总进入人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-out">1,189</div>
+                        <div class="stat-label">总离开人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="net-flow">+58</div>
+                        <div class="stat-label">净流入人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="peak-hour">14:00</div>
+                        <div class="stat-label">高峰期时段</div>
+                    </div>
+                </div>
+                
+                <div class="time-filter">
+                    <button class="time-btn active" data-period="day">今日</button>
+                    <button class="time-btn" data-period="week">本周</button>
+                    <button class="time-btn" data-period="month">本月</button>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="chart-container">
+                        <div class="chart-title">进出人数趋势</div>
+                        <canvas id="flow-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">进出人数对比</div>
+                        <canvas id="comparison-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">时段分布</div>
+                        <canvas id="hourly-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示框 -->
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <span class="notification-icon" id="notification-icon">ℹ️</span>
+            <span id="notification-message">这是一条提示信息</span>
+            <button class="notification-close" id="notification-close">✕</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab切换功能
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    
+                    // 更新按钮状态
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    // 更新内容显示
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === tabId) {
+                            content.classList.add('active');
+                        }
+                    });
+                    
+                    // 如果切换到数据看板，初始化图表
+                    if (tabId === 'dashboard') {
+                        initializeCharts();
+                    }
+                });
+            });
+            
+            // 坐标选取工具功能
+            const image = document.getElementById('target-image');
+            const fileInput = document.getElementById('file-input');
+            const urlToggleBtn = document.getElementById('url-toggle-btn');
+            const urlInputContainer = document.getElementById('url-input-container');
+            const imageUrl = document.getElementById('image-url');
+            const loadUrlBtn = document.getElementById('load-url-btn');
+            const imagePlaceholder = document.getElementById('image-placeholder');
+            const imageContainer = document.querySelector('.image-container');
+            const imageContainerWrapper = document.querySelector('.image-container-wrapper');
+            
+            const merchantNameInput = document.getElementById('merchant-name');
+            const merchantSuggestions = document.getElementById('merchant-suggestions');
+            
+            const point1X = document.getElementById('point1-x');
+            const point1Y = document.getElementById('point1-y');
+            const point2X = document.getElementById('point2-x');
+            const point2Y = document.getElementById('point2-y');
+            const directionSelect = document.getElementById('direction');
+            const submitBtn = document.getElementById('submit-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const submitDataBtn = document.getElementById('submit-data-btn');
+            const jsonOutput = document.getElementById('json-output');
+            const pointStatus = document.getElementById('point-status');
+            const pointStatusText = document.getElementById('point-status-text');
+            
+            let points = {
+                point1: null,
+                point2: null
+            };
+            let currentPoint = 1;
+            let tooltips = {};
+            
+            // 商家名称数据
+            const merchantNames = [
+                "北京王府井百货",
+                "上海南京路步行街",
+                "广州天河城",
+                "深圳华强北电子市场",
+                "成都春熙路",
+                "重庆解放碑",
+                "武汉汉正街",
+                "西安钟楼商场",
+                "杭州西湖银泰",
+                "南京新街口"
+            ];
+            
+            // 初始化商家名称建议
+            function initializeMerchantSuggestions() {
+                merchantNames.forEach(name => {
+                    const suggestion = document.createElement('div');
+                    suggestion.className = 'merchant-suggestion';
+                    suggestion.textContent = name;
+                    suggestion.addEventListener('click', function() {
+                        merchantNameInput.value = name;
+                        hideMerchantSuggestions();
+                        updateSubmitStatus();
+                    });
+                    merchantSuggestions.appendChild(suggestion);
+                });
+            }
+            
+            // 显示商家名称建议
+            function showMerchantSuggestions() {
+                merchantSuggestions.style.display = 'block';
+            }
+            
+            // 隐藏商家名称建议
+            function hideMerchantSuggestions() {
+                merchantSuggestions.style.display = 'none';
+            }
+            
+            // 过滤商家名称建议
+            function filterMerchantSuggestions(query) {
+                const suggestions = document.querySelectorAll('.merchant-suggestion');
+                let hasMatch = false;
+                
+                suggestions.forEach(suggestion => {
+                    if (suggestion.textContent.toLowerCase().includes(query.toLowerCase())) {
+                        suggestion.style.display = 'block';
+                        hasMatch = true;
+                    } else {
+                        suggestion.style.display = 'none';
+                    }
+                });
+                
+                return hasMatch;
+            }
+            
+            // 更新提交状态
+            function updateSubmitStatus() {
+                const merchantName = merchantNameInput.value.trim();
+                
+                if (points.point1 && points.point2 && merchantName) {
+                    // 两个点都已选择且商家名称已输入
+                    pointStatus.className = 'point-status complete';
+                    pointStatusText.textContent = '已选择两个点并输入商家名称，可以提交数据';
+                    submitDataBtn.disabled = false;
+                } else if (points.point1 && points.point2) {
+                    // 只选择两个点，但未输入商家名称
+                    pointStatus.className = 'point-status incomplete';
+                    pointStatusText.textContent = '已选择两个点，请输入商家名称';
+                    submitDataBtn.disabled = true;
+                } else if (points.point1) {
+                    // 只选择了一个点
+                    pointStatus.className = 'point-status incomplete';
+                    pointStatusText.textContent = '已选择第一个点，请选择第二个点';
+                    submitDataBtn.disabled = true;
+                } else {
+                    // 没有选择点
+                    pointStatus.className = 'point-status incomplete';
+                    pointStatusText.textContent = '请选择两个点并输入商家名称以启用提交功能';
+                    submitDataBtn.disabled = true;
+                }
+            }
+            
+            // 商家名称输入事件
+            merchantNameInput.addEventListener('input', function() {
+                const query = this.value;
+                if (query.length > 0) {
+                    const hasMatch = filterMerchantSuggestions(query);
+                    if (hasMatch) {
+                        showMerchantSuggestions();
+                    } else {
+                        hideMerchantSuggestions();
+                    }
+                } else {
+                    hideMerchantSuggestions();
+                }
+                updateSubmitStatus();
+            });
+            
+            // 商家名称焦点事件
+            merchantNameInput.addEventListener('focus', function() {
+                if (this.value.length > 0) {
+                    const hasMatch = filterMerchantSuggestions(this.value);
+                    if (hasMatch) {
+                        showMerchantSuggestions();
+                    }
+                } else {
+                    // 显示所有建议
+                    const suggestions = document.querySelectorAll('.merchant-suggestion');
+                    suggestions.forEach(suggestion => {
+                        suggestion.style.display = 'block';
+                    });
+                    showMerchantSuggestions();
+                }
+            });
+            
+            // 点击页面其他地方隐藏商家名称建议
+            document.addEventListener('click', function(e) {
+                if (!merchantNameInput.contains(e.target) && !merchantSuggestions.contains(e.target)) {
+                    hideMerchantSuggestions();
+                }
+            });
+            
+            // 切换URL输入框显示
+            urlToggleBtn.addEventListener('click', function() {
+                if (urlInputContainer.style.display === 'none') {
+                    urlInputContainer.style.display = 'flex';
+                    urlToggleBtn.textContent = '取消URL加载';
+                } else {
+                    urlInputContainer.style.display = 'none';
+                    urlToggleBtn.textContent = '🌐 通过URL加载';
+                }
+            });
+            
+            // 处理文件选择
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        loadImage(event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 处理URL加载
+            loadUrlBtn.addEventListener('click', function() {
+                const url = imageUrl.value.trim();
+                if (url) {
+                    loadImage(url);
+                } else {
+                    showNotification('请输入有效的图片URL', 'warning');
+                }
+            });
+            
+            // 加载图片
+            function loadImage(src) {
+                imagePlaceholder.textContent = '加载中...';
+                image.style.display = 'none';
+                
+                image.onload = function() {
+                    image.style.display = 'block';
+                    imagePlaceholder.style.display = 'none';
+                    
+                    // 调整容器大小以匹配图片
+                    adjustContainerSize();
+                    resetPoints();
+                };
+                
+                image.onerror = function() {
+                    imagePlaceholder.textContent = '图片加载失败，请检查URL或选择其他图片';
+                    image.style.display = 'none';
+                    showNotification('图片加载失败，请检查URL或选择其他图片', 'error');
+                };
+                
+                image.src = src;
+            }
+            
+            // 调整容器大小以匹配图片
+            function adjustContainerSize() {
+                // 获取图片的实际显示尺寸
+                const imgWidth = image.offsetWidth;
+                const imgHeight = image.offsetHeight;
+                
+                // 设置容器大小与图片一致
+                imageContainer.style.width = imgWidth + 'px';
+                imageContainer.style.height = imgHeight + 'px';
+                imageContainerWrapper.style.width = imgWidth + 'px';
+                imageContainerWrapper.style.height = imgHeight + 'px';
+            }
+            
+            // 图片点击事件处理
+            image.addEventListener('click', function(e) {
+                if (image.style.display === 'none') return;
+                
+                // 获取图片相对于容器的位置
+                const rect = image.getBoundingClientRect();
+                const containerRect = imageContainer.getBoundingClientRect();
+                
+                // 计算相对于图片的坐标
+                const x = Math.round(e.clientX - containerRect.left);
+                const y = Math.round(e.clientY - containerRect.top);
+                
+                // 保存坐标点
+                if (currentPoint === 1) {
+                    points.point1 = { x, y };
+                    point1X.value = x;
+                    point1Y.value = y;
+                    currentPoint = 2;
+                    addPointMarker(x, y, 1);
+                } else {
+                    points.point2 = { x, y };
+                    point2X.value = x;
+                    point2Y.value = y;
+                    currentPoint = 1;
+                    addPointMarker(x, y, 2);
+                }
+                
+                // 更新提交状态
+                updateSubmitStatus();
+            });
+            
+            // 添加坐标点标记
+            function addPointMarker(x, y, pointNumber) {
+                // 移除旧的标记
+                const oldMarker = document.querySelector(`.point-${pointNumber}`);
+                if (oldMarker) oldMarker.remove();
+                
+                // 创建新标记
+                const marker = document.createElement('div');
+                marker.className = `point-marker point-${pointNumber}`;
+                marker.style.left = `${x}px`;
+                marker.style.top = `${y}px`;
+                marker.dataset.pointNumber = pointNumber;
+                
+                // 为标记添加悬停事件
+                marker.addEventListener('mouseenter', function() {
+                    showTooltip(pointNumber, x, y);
+                });
+                
+                marker.addEventListener('mouseleave', function() {
+                    hideTooltip(pointNumber);
+                });
+                
+                // 添加到图片容器
+                imageContainer.appendChild(marker);
+                
+                // 创建工具提示（但不显示）
+                const tooltip = document.createElement('div');
+                tooltip.className = 'point-tooltip';
+                tooltip.textContent = `点${pointNumber} (${x}, ${y})`;
+                tooltip.id = `tooltip-${pointNumber}`;
+                tooltip.style.display = 'none';
+                imageContainer.appendChild(tooltip);
+                
+                // 保存工具提示引用
+                tooltips[pointNumber] = tooltip;
+            }
+            
+            // 显示工具提示
+            function showTooltip(pointNumber, x, y) {
+                const tooltip = tooltips[pointNumber];
+                if (!tooltip) return;
+                
+                // 确定工具提示位置，确保完全显示
+                const tooltipPosition = calculateTooltipPosition(x, y);
+                tooltip.className = `point-tooltip ${tooltipPosition}`;
+                tooltip.style.left = `${x}px`;
+                tooltip.style.top = `${y}px`;
+                tooltip.style.display = 'block';
+                
+                // 使用setTimeout确保显示样式生效后再添加show类
+                setTimeout(() => {
+                    tooltip.classList.add('show');
+                }, 10);
+            }
+            
+            // 隐藏工具提示
+            function hideTooltip(pointNumber) {
+                const tooltip = tooltips[pointNumber];
+                if (!tooltip) return;
+                
+                tooltip.classList.remove('show');
+                
+                // 等待动画完成后再隐藏
+                setTimeout(() => {
+                    tooltip.style.display = 'none';
+                }, 300);
+            }
+            
+            // 计算工具提示位置，确保完全显示
+            function calculateTooltipPosition(x, y) {
+                const containerRect = imageContainer.getBoundingClientRect();
+                const containerWidth = containerRect.width;
+                const containerHeight = containerRect.height;
+                
+                // 默认位置在点上方
+                let position = 'top';
+                
+                // 如果点靠近顶部，工具提示显示在下方
+                if (y < 80) {
+                    position = 'bottom';
+                }
+                // 如果点靠近左侧，工具提示显示在右侧
+                else if (x < 120) {
+                    position = 'right';
+                }
+                // 如果点靠近右侧，工具提示显示在左侧
+                else if (x > containerWidth - 120) {
+                    position = 'left';
+                }
+                
+                return position;
+            }
+            
+            // 重置坐标点
+            function resetPoints() {
+                points.point1 = null;
+                points.point2 = null;
+                currentPoint = 1;
+                
+                point1X.value = '';
+                point1Y.value = '';
+                point2X.value = '';
+                point2Y.value = '';
+                
+                // 移除所有标记和工具提示
+                document.querySelectorAll('.point-marker, .point-tooltip').forEach(el => el.remove());
+                
+                // 清空工具提示引用
+                tooltips = {};
+                
+                jsonOutput.textContent = '// 数据将在这里显示';
+                
+                // 更新提交状态
+                updateSubmitStatus();
+            }
+            
+            // 提交按钮点击事件
+            submitBtn.addEventListener('click', function() {
+                // 验证数据
+                if (!points.point1 || !points.point2) {
+                    showNotification('请先在图片上选择两个点！', 'warning');
+                    return;
+                }
+                
+                const merchantName = merchantNameInput.value.trim();
+                if (!merchantName) {
+                    showNotification('请输入商家名称！', 'warning');
+                    return;
+                }
+                
+                // 获取方向
+                const direction = directionSelect.value;
+                
+                // 创建JSON数据
+                const jsonData = {
+                    merchant: merchantName,
+                    x1: points.point1.x.toString(),
+                    y1: points.point1.y.toString(),
+                    x2: points.point2.x.toString(),
+                    y2: points.point2.y.toString(),
+                    direction: direction
+                };
+                
+                // 显示JSON数据
+                jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
+                
+                showNotification('JSON数据生成成功！', 'success');
+            });
+            
+            // 重置按钮点击事件
+            resetBtn.addEventListener('click', resetPoints);
+            
+            // 复制按钮点击事件
+            copyBtn.addEventListener('click', function() {
+                if (jsonOutput.textContent === '// 数据将在这里显示') {
+                    showNotification('请先生成JSON数据！', 'warning');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(jsonOutput.textContent)
+                    .then(() => {
+                        showNotification('JSON数据已复制到剪贴板！', 'success');
+                    })
+                    .catch(err => {
+                        console.error('复制失败: ', err);
+                        showNotification('复制失败，请手动复制文本', 'error');
+                    });
+            });
+            
+            // 提交数据按钮点击事件
+            submitDataBtn.addEventListener('click', function() {
+                if (!points.point1 || !points.point2) {
+                    showNotification('请先在图片上选择两个点！', 'warning');
+                    return;
+                }
+                
+                const merchantName = merchantNameInput.value.trim();
+                if (!merchantName) {
+                    showNotification('请输入商家名称！', 'warning');
+                    return;
+                }
+                
+                if (jsonOutput.textContent === '// 数据将在这里显示') {
+                    showNotification('请先生成JSON数据！', 'warning');
+                    return;
+                }
+                
+                // 获取JSON数据
+                const jsonData = jsonOutput.textContent;
+                
+                // 显示提交中状态
+                submitDataBtn.disabled = true;
+                submitDataBtn.textContent = '提交中...';
+
+                fetch('http://localhost:8080/erkai/visualnet/set', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: jsonData
+                }).then(response => {
+                    return response.json()
+                }).then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Success: ' + data.message, 'success');
+                    } else {
+                        showNotification('提交完成但有警告: ' + data.message, 'warning');
+                    }
+
+                }).catch(error => {
+                    showNotification('提交失败: ' + error.message, 'error');
+                }).finally(() => {
+                     // 恢复按钮状态
+                    submitDataBtn.disabled = false;
+                    submitDataBtn.textContent = '提交数据';
+                })
+            });
+            
+            // 提示框功能
+            const notification = document.getElementById('notification');
+            const notificationIcon = document.getElementById('notification-icon');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationClose = document.getElementById('notification-close');
+            
+            // 显示提示框
+            function showNotification(message, type) {
+                // 设置消息和类型
+                notificationMessage.textContent = message;
+                notification.className = `notification ${type}`;
+                
+                // 设置图标
+                let icon = 'ℹ️';
+                if (type === 'success') icon = '✅';
+                else if (type === 'error') icon = '❌';
+                else if (type === 'warning') icon = '⚠️';
+                notificationIcon.textContent = icon;
+                
+                // 显示提示框
+                notification.classList.add('show');
+                
+                // 5秒后自动隐藏
+                setTimeout(() => {
+                    hideNotification();
+                }, 5000);
+            }
+            
+            // 隐藏提示框
+            function hideNotification() {
+                notification.classList.remove('show');
+            }
+            
+            // 点击关闭按钮隐藏提示框
+            notificationClose.addEventListener('click', hideNotification);
+            
+            // 窗口大小变化时重新调整容器大小
+            window.addEventListener('resize', function() {
+                if (image.style.display !== 'none') {
+                    adjustContainerSize();
+                }
+            });
+            
+            // 数据看板功能
+            let flowChart, comparisonChart, hourlyChart;
+            
+            // 时间筛选按钮事件
+            const timeButtons = document.querySelectorAll('.time-btn');
+            timeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    timeButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 根据时间筛选更新图表
+                    const period = this.getAttribute('data-period');
+                    fetchDashboardData(period);
+                });
+            });
+            
+            // 从后端获取数据看板数据
+            async function fetchDashboardData(period) {
+                try {
+                    showNotification('正在加载数据...', 'info');
+                    
+                    // 获取统计卡片数据
+                    const statsResponse = await fetch(`/api/dashboard/stats?period=${period}`);
+                    const statsData = await statsResponse.json();
+                    updateStatsCards(statsData);
+                    
+                    // 获取趋势图表数据
+                    const flowResponse = await fetch(`/api/dashboard/flow?period=${period}`);
+                    const flowData = await flowResponse.json();
+                    updateFlowChart(flowData);
+                    
+                    // 获取对比图表数据
+                    const comparisonResponse = await fetch(`/api/dashboard/comparison?period=${period}`);
+                    const comparisonData = await comparisonResponse.json();
+                    updateComparisonChart(comparisonData);
+                    
+                    // 获取时段分布数据
+                    const hourlyResponse = await fetch(`/api/dashboard/hourly?period=${period}`);
+                    const hourlyData = await hourlyResponse.json();
+                    updateHourlyChart(hourlyData);
+                    
+                    showNotification('数据加载成功！', 'success');
+                } catch (error) {
+                    console.error('获取数据失败:', error);
+                    showNotification('数据加载失败，请稍后重试', 'error');
+                    
+                    // 如果后端不可用，使用模拟数据
+                    useMockData(period);
+                }
+            }
+            
+            // 使用模拟数据（当后端不可用时）
+            function useMockData(period) {
+                // 模拟数据
+                const mockData = {
+                    day: {
+                        stats: { totalIn: 1247, totalOut: 1189, netFlow: 58, peakHour: "14:00" },
+                        flow: {
+                            labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"],
+                            in: [65, 78, 90, 81, 56, 55, 120, 95, 80, 70, 60],
+                            out: [45, 62, 70, 65, 80, 75, 95, 85, 70, 65, 75]
+                        },
+                        comparison: {
+                            labels: ["入口A", "入口B", "入口C", "出口A", "出口B"],
+                            data: [320, 190, 280, 210, 170]
+                        },
+                        hourly: {
+                            labels: ["上午 (8-12)", "中午 (12-14)", "下午 (14-18)", "晚上 (18-22)"],
+                            data: [35, 25, 30, 10]
+                        }
+                    },
+                    week: {
+                        stats: { totalIn: 8342, totalOut: 8123, netFlow: 219, peakHour: "15:00" },
+                        flow: {
+                            labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
+                            in: [450, 520, 480, 510, 490, 530, 500],
+                            out: [420, 480, 460, 490, 470, 510, 480]
+                        },
+                        comparison: {
+                            labels: ["入口A", "入口B", "入口C", "出口A", "出口B"],
+                            data: [2200, 1300, 1900, 1500, 1200]
+                        },
+                        hourly: {
+                            labels: ["上午 (8-12)", "中午 (12-14)", "下午 (14-18)", "晚上 (18-22)"],
+                            data: [30, 20, 35, 15]
+                        }
+                    },
+                    month: {
+                        stats: { totalIn: 35247, totalOut: 34891, netFlow: 356, peakHour: "14:30" },
+                        flow: {
+                            labels: ["第1周", "第2周", "第3周", "第4周"],
+                            in: [8500, 9200, 8800, 8700],
+                            out: [8400, 9100, 8700, 8600]
+                        },
+                        comparison: {
+                            labels: ["入口A", "入口B", "入口C", "出口A", "出口B"],
+                            data: [13200, 7800, 11400, 9000, 7200]
+                        },
+                        hourly: {
+                            labels: ["上午 (8-12)", "中午 (12-14)", "下午 (14-18)", "晚上 (18-22)"],
+                            data: [28, 22, 38, 12]
+                        }
+                    }
+                };
+                
+                const data = mockData[period] || mockData.day;
+                updateStatsCards(data.stats);
+                updateFlowChart(data.flow);
+                updateComparisonChart(data.comparison);
+                updateHourlyChart(data.hourly);
+            }
+            
+            // 更新统计卡片
+            function updateStatsCards(data) {
+                document.getElementById('total-in').textContent = formatNumber(data.totalIn);
+                document.getElementById('total-out').textContent = formatNumber(data.totalOut);
+                document.getElementById('net-flow').textContent = formatNumber(data.netFlow, true);
+                document.getElementById('peak-hour').textContent = data.peakHour;
+            }
+            
+            // 更新进出人数趋势图
+            function updateFlowChart(data) {
+                if (flowChart) {
+                    flowChart.data.labels = data.labels;
+                    flowChart.data.datasets[0].data = data.in;
+                    flowChart.data.datasets[1].data = data.out;
+                    flowChart.update();
+                }
+            }
+            
+            // 更新进出人数对比图
+            function updateComparisonChart(data) {
+                if (comparisonChart) {
+                    comparisonChart.data.labels = data.labels;
+                    comparisonChart.data.datasets[0].data = data.data;
+                    comparisonChart.update();
+                }
+            }
+            
+            // 更新时段分布图
+            function updateHourlyChart(data) {
+                if (hourlyChart) {
+                    hourlyChart.data.labels = data.labels;
+                    hourlyChart.data.datasets[0].data = data.data;
+                    hourlyChart.update();
+                }
+            }
+            
+            // 格式化数字显示
+            function formatNumber(num, showSign = false) {
+                const sign = showSign && num > 0 ? '+' : '';
+                if (num >= 10000) {
+                    return sign + (num / 10000).toFixed(1) + '万';
+                } else if (num >= 1000) {
+                    return sign + (num / 1000).toFixed(1) + '千';
+                }
+                return sign + num.toString();
+            }
+            
+            // 初始化图表
+            function initializeCharts() {
+                // 进出人数趋势图
+                const flowCtx = document.getElementById('flow-chart').getContext('2d');
+                flowChart = new Chart(flowCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: '进入人数',
+                                data: [],
+                                borderColor: '#2ed573',
+                                backgroundColor: 'rgba(46, 213, 115, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: '离开人数',
+                                data: [],
+                                borderColor: '#ff4757',
+                                backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                // 进出人数对比图
+                const comparisonCtx = document.getElementById('comparison-chart').getContext('2d');
+                comparisonChart = new Chart(comparisonCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: '人数',
+                            data: [],
+                            backgroundColor: [
+                                'rgba(106, 17, 203, 0.7)',
+                                'rgba(37, 117, 252, 0.7)',
+                                'rgba(46, 213, 115, 0.7)',
+                                'rgba(255, 71, 87, 0.7)',
+                                'rgba(255, 165, 0, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(106, 17, 203, 1)',
+                                'rgba(37, 117, 252, 1)',
+                                'rgba(46, 213, 115, 1)',
+                                'rgba(255, 71, 87, 1)',
+                                'rgba(255, 165, 0, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+                
+                // 时段分布图
+                const hourlyCtx = document.getElementById('hourly-chart').getContext('2d');
+                hourlyChart = new Chart(hourlyCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [
+                                'rgba(106, 17, 203, 0.7)',
+                                'rgba(37, 117, 252, 0.7)',
+                                'rgba(46, 213, 115, 0.7)',
+                                'rgba(255, 71, 87, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(106, 17, 203, 1)',
+                                'rgba(37, 117, 252, 1)',
+                                'rgba(46, 213, 115, 1)',
+                                'rgba(255, 71, 87, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // 初始化时加载今日数据
+                fetchDashboardData('day');
+            }
+            
+            // 初始化商家名称建议
+            initializeMerchantSuggestions();
+        });
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
 DOOR_STATE = 'DOOR_STATE'
 IN_NUM = 'in_num'
 OUT_NUM = 'out_num'
+SERIAL_ID_MAP = 'serial_id_map'

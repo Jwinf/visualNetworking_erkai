@@ -1,6 +1,6 @@
 import redis
 import json
-from typing import Optional, Any, Dict, Union
+from typing import Optional, Any, Dict, Union, List
 from const.colors_enum import Colors
 
 class Redis_util:
@@ -37,6 +37,14 @@ class Redis_util:
         except Exception as e:
             app.logger.error(f"Redis初始化错误: {e}")
             raise
+
+    def get(self, key: str, default: Any) -> Optional[Any]:
+        value = self.redis_client.get(str)
+        return value if value is not None else default
+    
+    def set(self, key: str, value: Any) -> bool:
+        result = self.redis_client.set(key, value)
+        return result >= 0
 
     def hset(self, key: str, field: str, value: Any) -> bool:
             """
@@ -123,6 +131,32 @@ class Redis_util:
             Dict: 包含所有字段和值的字典
         """
         return self.redis_client.hgetall(key)
+    
+    def exist(self, key: str) -> bool:
+        return self.redis_client.exists(key) > 0
+    
+    def rpush(self, key: str, value: Any) -> Optional[int]:
+        return self.redis_client.rpush(key, value)
+    
+    def expire(self, key: str, timestamp: int) -> bool:
+        return self.redis_client.expire(key, timestamp)
+    
+    def lrange(self, key: str, start: int, end: int) -> List:
+        return self.redis_client.lrange(key, start, end)
+    
+    def setex(self, key: str, time: int, value: Any) -> bool:
+        """
+        设置键的值和过期时间（秒）
+        
+        Args:
+            key: 键名
+            time: 过期时间（秒）
+            value: 值
+            
+        Returns:
+            操作是否成功
+        """
+        return self.set(key, value, ex=time)
         
 
     def close(self):

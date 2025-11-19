@@ -2,7 +2,13 @@ from flask import Flask
 from config.config import config
 from config.config import get_config
 
+def banner():
+    with open('E:\workplace\VSCodeWorkplace\\visualNetworking_erkai\static\\favicon.txt', 'r') as f:
+        print(f.read())
+
 def create_app(config_name=None):
+    banner()
+
     app = Flask(__name__)
     
     # 配置应用
