@@ -98,6 +98,7 @@ class Redis_util:
             
             # 使用hmset批量设置字段
             if data_dict:
+                print(data_dict)
                 self.redis_client.hmset(key, data_dict)
                 return True
             else:

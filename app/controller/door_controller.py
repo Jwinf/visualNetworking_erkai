@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from const.colors_enum import Colors
 from const.redis_key import DOOR_STATE
 from app.extensions import redis_util
+import json
 
 door_controller = Blueprint('door', __name__)
 
@@ -9,31 +10,32 @@ door_controller = Blueprint('door', __name__)
 def set_state():
     try:
         # 获取前端发送的JSON数据
-        data = request.get_json()
-        
+        data = json.loads(request.get_json())
+       
+        print(type(data))
         # 检查数据是否为空
         if not data:
             return jsonify({'error': 'No data received'}), 400
       # 提取字段
-        merchant_name = data.get('merchant_name')
-        x1 = data.get('x1')
-        y1 = data.get('y1')
-        x2 = data.get('x2')
-        y2 = data.get('y2')
-        state = data.get('state')
+        print(data)
+        merchant_name = data['merchant']
+        x1 = data['x1']
+        y1 = data['y1']
+        x2 = data['x2']
+        y2 = data['y2']
+        state = data['direction']
         
         # 打印接收到的数据（用于调试）
         print(f"{Colors.GREEN.value}Received data: merchant_name = {merchant_name}, x1={x1}, y1={y1}, x2={x2}, y2={y2}, state={state}{Colors.END.value}")   
         # 存入redis
-        redis_util.hmset(f'{merchant_name}:{DOOR_STATE}', jsonify({
+        redis_util.hmset(f'{merchant_name}:{DOOR_STATE}', {
             'x1': x1,'y1': y1, 'x2': x2, 'y2': y2, 'state': state
-        }))
+        })
 
         # 返回成功响应
         return jsonify({
             'status': 'success',
             'message': 'Parameter set successed!',
-            'received_data': data
         }), 200
         
     except Exception as e:

@@ -767,10 +767,10 @@
                         <label for="direction">选择方向</label>
                         <div class="direction-select">
                             <select id="direction">
-                                <option value="up">↑ 向上</option>
-                                <option value="down">↓ 向下</option>
-                                <option value="left">← 向左</option>
-                                <option value="right">→ 向右</option>
+                                <option value="0">↑ 向上</option>
+                                <option value="1">↓ 向下</option>
+                                <option value="2">← 向左</option>
+                                <option value="3">→ 向右</option>
                             </select>
                         </div>
                     </div>
@@ -1292,8 +1292,10 @@
                 // 创建JSON数据
                 const jsonData = {
                     merchant: merchantName,
-                    point1: points.point1,
-                    point2: points.point2,
+                    x1: points.point1.x.toString(),
+                    y1: points.point1.y.toString(),
+                    x2: points.point2.x.toString(),
+                    y2: points.point2.y.toString(),
                     direction: direction
                 };
                 
@@ -1347,30 +1349,51 @@
                 // 显示提交中状态
                 submitDataBtn.disabled = true;
                 submitDataBtn.textContent = '提交中...';
+
+                fetch('http://localhost:8080/erkai/visualnet/set', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(jsonData)
+                }).then(response => {
+                    return response.json()
+                }).then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Success: ' + data.message, 'success');
+                    } else {
+                        showNotification('提交完成但有警告: ' + data.message, 'warning');
+                    }
+
+                }).finally(() => {
+                     // 恢复按钮状态
+                    submitDataBtn.disabled = false;
+                    submitDataBtn.textContent = '提交数据';
+                })
                 
                 // 模拟向后端提交数据
                 // 在实际应用中，这里应该替换为真实的API端点
-                simulateBackendSubmit(jsonData)
-                    .then(response => {
-                        // 根据状态码显示不同的提示
-                        if (response.status >= 200 && response.status < 300) {
-                            showNotification('数据提交成功！', 'success');
-                        } else if (response.status >= 400 && response.status < 500) {
-                            showNotification('提交失败：客户端错误 ' + response.status, 'error');
-                        } else if (response.status >= 500) {
-                            showNotification('提交失败：服务器错误 ' + response.status, 'error');
-                        } else {
-                            showNotification('提交完成，状态码：' + response.status, 'info');
-                        }
-                    })
-                    .catch(error => {
-                        showNotification('提交失败：' + error.message, 'error');
-                    })
-                    .finally(() => {
-                        // 恢复按钮状态
-                        submitDataBtn.disabled = false;
-                        submitDataBtn.textContent = '提交数据';
-                    });
+                // simulateBackendSubmit(jsonData)
+                //     .then(response => {
+                //         // 根据状态码显示不同的提示
+                //         if (response.status >= 200 && response.status < 300) {
+                //             showNotification('数据提交成功！', 'success');
+                //         } else if (response.status >= 400 && response.status < 500) {
+                //             showNotification('提交失败：客户端错误 ' + response.status, 'error');
+                //         } else if (response.status >= 500) {
+                //             showNotification('提交失败：服务器错误 ' + response.status, 'error');
+                //         } else {
+                //             showNotification('提交完成，状态码：' + response.status, 'info');
+                //         }
+                //     })
+                //     .catch(error => {
+                //         showNotification('提交失败：' + error.message, 'error');
+                //     })
+                //     .finally(() => {
+                //         // 恢复按钮状态
+                //         submitDataBtn.disabled = false;
+                //         submitDataBtn.textContent = '提交数据';
+                //     });
             });
             
             // 模拟向后端提交数据
