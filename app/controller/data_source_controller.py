@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import json
 from datetime import datetime
-from service.data_source_service import get_daily_statistics, get_range_statistics
+from service.data_source_service import get_statistics
 from app.extensions import redis_util
 from const.redis_key import SERIAL_ID_MAP
 
@@ -19,11 +19,7 @@ def statistics():
             "data": None
         })
     period = request.args.get("period", "day")
-    match period:
-        case 'day':
-            result = get_daily_statistics(serial_id)
-        case "week" | 'month':
-            result = get_range_statistics(serial_id, period)
+    result = get_statistics(serial_id, period)
     return jsonify({
             "code": 200,
             "message": "success",
