@@ -23,6 +23,8 @@ def create_app(config_name=None):
     
     # 注册蓝图
     from app.controller.door_controller import door_controller
+    from app.controller.data_source_controller import data_source_controller
     app.register_blueprint(door_controller, url_prefix='/erkai/visualnet')
+    app.register_blueprint(data_source_controller, url_prefix='/erkai/visualnet')
     
     return app

@@ -3,12 +3,12 @@ from datetime import datetime, timedelta
 from app.extensions import redis_util
 from const.redis_key import IN_NUM, OUT_NUM
 
-def store_hourly_data(merchant_name):
+def store_hourly_data(serial_id):
     try:
         now = datetime.now()
         hour_timestamp = now.replace(minute=0, second=0, microsecond=0)
-        cur_in_num = redis_util.get(f'{merchant_name}:current:{IN_NUM}', 0)
-        cur_out_num = redis_util.get(f'{merchant_name}:current:{OUT_NUM}', 0)
+        cur_in_num = redis_util.get(f'{serial_id}:current:{IN_NUM}', 0)
+        cur_out_num = redis_util.get(f'{serial_id}:current:{OUT_NUM}', 0)
         
         # 创建小时数据记录
         hour_in_data = {
@@ -26,8 +26,8 @@ def store_hourly_data(merchant_name):
         }
         
         # 存储到每日小时数据列表
-        hour_in_data_key = f"{merchant_name}:hour_in:{now.strftime('%Y-%m-%d')}"
-        hour_out_data_key = f"{merchant_name}:hour_out:{now.strftime('%Y-%m-%d')}"
+        hour_in_data_key = f"{serial_id}:hour_in:{now.strftime('%Y-%m-%d')}"
+        hour_out_data_key = f"{serial_id}:hour_out:{now.strftime('%Y-%m-%d')}"
         redis_util.rpush(hour_in_data_key, json.dumps(hour_in_data))
         redis_util.rpush(hour_out_data_key, json.dumps(hour_out_data))
         
@@ -46,13 +46,13 @@ def store_hourly_data(merchant_name):
         print(f"存储小时数据失败: {e}")
         return False
 
-def get_daily_hourly_data(merchant_name, date_str=None):
+def get_daily_hourly_data(serial_id, date_str=None):
     """获取某天的小时数据"""
     if date_str is None:
         date_str = datetime.now().strftime("%Y-%m-%d")
     
-    hourly_in_key = f"{merchant_name}:hour_in:{date_str}"
-    hourly_out_ley = f"{merchant_name}:hour_out:{date_str}"
+    hourly_in_key = f"{serial_id}:hour_in:{date_str}"
+    hourly_out_ley = f"{serial_id}:hour_out:{date_str}"
 
     in_data_list = redis_util.lrange(hourly_in_key, 0, -1)
     out_data_list = redis_util.lrange(hourly_out_ley, 0, -1)
@@ -95,7 +95,7 @@ def _calculate_aggregations():
     except Exception as e:
         print(f"计算聚合数据失败: {e}")
 
-def _calculate_weekly_aggregation(merchant_name, current_time):
+def _calculate_weekly_aggregation(serial_id, current_time):
     """计算本周的小时数据聚合"""
     try:
         # 获取本周的开始日期（周一）
@@ -112,7 +112,7 @@ def _calculate_weekly_aggregation(merchant_name, current_time):
             date_str = current_date.strftime("%Y-%m-%d")
             
             # 获取当天的24小时数据
-            daily_in_values, daily_out_values = get_daily_hourly_data(merchant_name, date_str)
+            daily_in_values, daily_out_values = get_daily_hourly_data(serial_id, date_str)
             
             # 将每个小时的数据添加到对应的聚合列表中
             for hour in range(24):
@@ -138,8 +138,8 @@ def _calculate_weekly_aggregation(merchant_name, current_time):
                 weekly_out_aggregated.append(0)
         
         # 存储周聚合数据
-        week_in_key = f"{merchant_name}:week_in:{current_time.strftime('%Y-%W')}"
-        week_out_key = f"{merchant_name}:week_out:{current_time.strftime('%Y-%W')}"
+        week_in_key = f"{serial_id}:week_in:{current_time.strftime('%Y-%W')}"
+        week_out_key = f"{serial_id}:week_out:{current_time.strftime('%Y-%W')}"
         redis_util.setex(week_in_key, 3600 * 24 * 8, json.dumps({
             "timestamp": current_time.isoformat(),
             "data": weekly_in_aggregated,
@@ -156,7 +156,7 @@ def _calculate_weekly_aggregation(merchant_name, current_time):
     except Exception as e:
         print(f"计算周聚合失败: {e}")
 
-def _calculate_monthly_aggregation(merchant_name, current_time):
+def _calculate_monthly_aggregation(serial_id, current_time):
     """计算本月的小时数据聚合"""
     try:
         # 获取本月的第一天
@@ -183,7 +183,7 @@ def _calculate_monthly_aggregation(merchant_name, current_time):
             date_str = current_date.strftime("%Y-%m-%d")
             
             # 获取当天的24小时数据
-            daily_in_data, daily_out_data = get_daily_hourly_data(merchant_name, date_str)
+            daily_in_data, daily_out_data = get_daily_hourly_data(serial_id, date_str)
             
             # 将每个小时的数据添加到对应的聚合列表中
             for hour in range(24):
@@ -208,8 +208,8 @@ def _calculate_monthly_aggregation(merchant_name, current_time):
                 monthly_out_aggregated.append(0)
         
         # 存储月聚合数据
-        month_in_key = f"{merchant_name}:month_in:{current_time.strftime('%Y-%m')}"
-        month_out_key = f"{merchant_name}:month_out:{current_time.strftime('%Y-%m')}"
+        month_in_key = f"{serial_id}:month_in:{current_time.strftime('%Y-%m')}"
+        month_out_key = f"{serial_id}:month_out:{current_time.strftime('%Y-%m')}"
         
         redis_util.setex(month_in_key, 3600 * 24 * 32, json.dumps({
             "timestamp": current_time.isoformat(),

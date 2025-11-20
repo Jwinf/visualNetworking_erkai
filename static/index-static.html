@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>图片坐标选取工具与数据看板 - 商家名称集成版</title>
+    <title>图片坐标选取工具与数据看板 - 商家名称与序列号集成版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -500,6 +500,11 @@
             background-color: #e9ecef;
         }
         
+        /* 序列号输入框样式 */
+        .serial-input-container {
+            position: relative;
+        }
+        
         /* 数据看板样式 */
         .dashboard {
             width: 100%;
@@ -681,7 +686,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>图片坐标选取工具与数据看板 - 商家名称集成版</h1>
+            <h1>图片坐标选取工具与数据看板 - 商家名称与序列号集成版</h1>
             <p class="subtitle">坐标选取与进出人数可视化分析</p>
         </header>
         
@@ -728,6 +733,15 @@
             
             <div class="control-section">
                 <div class="control-panel">
+
+                     <!-- 新增序列号输入框 -->
+                    <div class="form-group">
+                        <label for="serial-number">序列号</label>
+                        <div class="serial-input-container">
+                            <input type="text" id="serial-number" placeholder="请输入序列号">
+                        </div>
+                    </div>
+                    
                     <!-- 商家名称输入框 -->
                     <div class="form-group">
                         <label for="merchant-name">商家名称</label>
@@ -738,6 +752,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     
                     <div class="form-group">
                         <label for="point1">第一个点坐标</label>
@@ -780,7 +795,7 @@
                     <!-- 点选择状态指示器 -->
                     <div class="point-status incomplete" id="point-status">
                         <span class="point-status-icon">⚠️</span>
-                        <span id="point-status-text">请选择两个点并输入商家名称以启用提交功能</span>
+                        <span id="point-status-text">请选择两个点并输入商家名称和序列号以启用提交功能</span>
                     </div>
                     
                     <div class="action-buttons">
@@ -797,12 +812,13 @@
                 <ol>
                     <li><strong>加载图片</strong>：通过"选择本地图片"按钮从您的设备中选择图片，或通过"通过URL加载"按钮输入图片URL地址加载图片。</li>
                     <li><strong>输入商家名称</strong>：在商家名称输入框中输入商家名称，或从下拉建议中选择一个商家名称。</li>
+                    <li><strong>输入序列号</strong>：在序列号输入框中输入序列号。</li>
                     <li><strong>选择坐标点</strong>：在图片上点击选择第一个坐标点（红色标记），再次点击选择第二个坐标点（绿色标记）。</li>
                     <li><strong>查看坐标信息</strong>：将鼠标悬停在已选择的点上可以查看该点的坐标信息。</li>
                     <li><strong>选择方向</strong>：从下拉菜单中选择方向（向上、向下、向左或向右）。</li>
-                    <li><strong>生成JSON数据</strong>：点击"生成JSON数据"按钮将商家名称、坐标点和方向信息转换为JSON格式。</li>
-                    <li><strong>提交数据</strong>：当您选择了两个点并输入了商家名称后，"提交数据"按钮将启用，点击可将数据提交到后端服务器。</li>
-                    <li><strong>数据验证</strong>：系统会验证您是否已选择两个点并输入商家名称，未完成时将无法提交数据。</li>
+                    <li><strong>生成JSON数据</strong>：点击"生成JSON数据"按钮将商家名称、序列号、坐标点和方向信息转换为JSON格式。</li>
+                    <li><strong>提交数据</strong>：当您选择了两个点并输入了商家名称和序列号后，"提交数据"按钮将启用，点击可将数据提交到后端服务器。</li>
+                    <li><strong>数据验证</strong>：系统会验证您是否已选择两个点并输入商家名称和序列号，未完成时将无法提交数据。</li>
                     <li><strong>重置操作</strong>：如需重新选择点，可点击"重置坐标点"按钮清除当前选择。</li>
                 </ol>
                 <p><strong>注意事项</strong>：确保选择的图片清晰可见，坐标点应准确标记在您需要的位置。提交数据后，系统会根据后端响应显示相应的提示信息。</p>
@@ -912,6 +928,7 @@
             
             const merchantNameInput = document.getElementById('merchant-name');
             const merchantSuggestions = document.getElementById('merchant-suggestions');
+            const serialNumberInput = document.getElementById('serial-number'); // 新增序列号输入框
             
             const point1X = document.getElementById('point1-x');
             const point1Y = document.getElementById('point1-y');
@@ -992,16 +1009,22 @@
             // 更新提交状态
             function updateSubmitStatus() {
                 const merchantName = merchantNameInput.value.trim();
+                const serialNumber = serialNumberInput.value.trim();
                 
-                if (points.point1 && points.point2 && merchantName) {
-                    // 两个点都已选择且商家名称已输入
+                if (points.point1 && points.point2 && merchantName && serialNumber) {
+                    // 两个点都已选择且商家名称和序列号已输入
                     pointStatus.className = 'point-status complete';
-                    pointStatusText.textContent = '已选择两个点并输入商家名称，可以提交数据';
+                    pointStatusText.textContent = '已选择两个点并输入商家名称和序列号，可以提交数据';
                     submitDataBtn.disabled = false;
-                } else if (points.point1 && points.point2) {
-                    // 只选择两个点，但未输入商家名称
+                } else if (points.point1 && points.point2 && merchantName) {
+                    // 只选择两个点并输入商家名称，但未输入序列号
                     pointStatus.className = 'point-status incomplete';
-                    pointStatusText.textContent = '已选择两个点，请输入商家名称';
+                    pointStatusText.textContent = '已选择两个点并输入商家名称，请输入序列号';
+                    submitDataBtn.disabled = true;
+                } else if (points.point1 && points.point2) {
+                    // 只选择两个点，但未输入商家名称和序列号
+                    pointStatus.className = 'point-status incomplete';
+                    pointStatusText.textContent = '已选择两个点，请输入商家名称和序列号';
                     submitDataBtn.disabled = true;
                 } else if (points.point1) {
                     // 只选择了一个点
@@ -1011,7 +1034,7 @@
                 } else {
                     // 没有选择点
                     pointStatus.className = 'point-status incomplete';
-                    pointStatusText.textContent = '请选择两个点并输入商家名称以启用提交功能';
+                    pointStatusText.textContent = '请选择两个点并输入商家名称和序列号以启用提交功能';
                     submitDataBtn.disabled = true;
                 }
             }
@@ -1029,6 +1052,11 @@
                 } else {
                     hideMerchantSuggestions();
                 }
+                updateSubmitStatus();
+            });
+            
+            // 序列号输入事件
+            serialNumberInput.addEventListener('input', function() {
                 updateSubmitStatus();
             });
             
@@ -1260,6 +1288,9 @@
                 point2X.value = '';
                 point2Y.value = '';
                 
+                // 清空序列号
+                serialNumberInput.value = '';
+                
                 // 移除所有标记和工具提示
                 document.querySelectorAll('.point-marker, .point-tooltip').forEach(el => el.remove());
                 
@@ -1286,12 +1317,19 @@
                     return;
                 }
                 
+                const serialNumber = serialNumberInput.value.trim();
+                if (!serialNumber) {
+                    showNotification('请输入序列号！', 'warning');
+                    return;
+                }
+                
                 // 获取方向
                 const direction = directionSelect.value;
                 
                 // 创建JSON数据
                 const jsonData = {
                     merchant: merchantName,
+                    serial: serialNumber,
                     x1: points.point1.x.toString(),
                     y1: points.point1.y.toString(),
                     x2: points.point2.x.toString(),
@@ -1338,6 +1376,12 @@
                     return;
                 }
                 
+                const serialNumber = serialNumberInput.value.trim();
+                if (!serialNumber) {
+                    showNotification('请输入序列号！', 'warning');
+                    return;
+                }
+                
                 if (jsonOutput.textContent === '// 数据将在这里显示') {
                     showNotification('请先生成JSON数据！', 'warning');
                     return;
@@ -1355,7 +1399,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(jsonData)
+                    body: jsonData
                 }).then(response => {
                     return response.json()
                 }).then(data => {
@@ -1370,56 +1414,7 @@
                     submitDataBtn.disabled = false;
                     submitDataBtn.textContent = '提交数据';
                 })
-                
-                // 模拟向后端提交数据
-                // 在实际应用中，这里应该替换为真实的API端点
-                // simulateBackendSubmit(jsonData)
-                //     .then(response => {
-                //         // 根据状态码显示不同的提示
-                //         if (response.status >= 200 && response.status < 300) {
-                //             showNotification('数据提交成功！', 'success');
-                //         } else if (response.status >= 400 && response.status < 500) {
-                //             showNotification('提交失败：客户端错误 ' + response.status, 'error');
-                //         } else if (response.status >= 500) {
-                //             showNotification('提交失败：服务器错误 ' + response.status, 'error');
-                //         } else {
-                //             showNotification('提交完成，状态码：' + response.status, 'info');
-                //         }
-                //     })
-                //     .catch(error => {
-                //         showNotification('提交失败：' + error.message, 'error');
-                //     })
-                //     .finally(() => {
-                //         // 恢复按钮状态
-                //         submitDataBtn.disabled = false;
-                //         submitDataBtn.textContent = '提交数据';
-                //     });
             });
-            
-            // 模拟向后端提交数据
-            function simulateBackendSubmit(data) {
-                return new Promise((resolve, reject) => {
-                    // 模拟网络延迟
-                    setTimeout(() => {
-                        // 随机生成状态码来模拟不同响应
-                        const statusCodes = [200, 201, 400, 401, 403, 404, 500, 502];
-                        const randomStatus = statusCodes[Math.floor(Math.random() * statusCodes.length)];
-                        
-                        // 模拟成功或失败
-                        if (randomStatus < 300) {
-                            resolve({
-                                status: randomStatus,
-                                message: '数据提交成功'
-                            });
-                        } else {
-                            reject({
-                                status: randomStatus,
-                                message: '提交失败，状态码：' + randomStatus
-                            });
-                        }
-                    }, 1500);
-                });
-            }
             
             // 提示框功能
             const notification = document.getElementById('notification');
