@@ -42,7 +42,7 @@ def get_statistics(serial_id, flag: str) -> Dict:
         "peakHour": peak_hour,
         "in_data": in_value,
         "out_data": out_value,
-        "labels":  [f"{hour:02d}:00" for hour in len(in_data)]
+        "labels":  [f"{hour:02d}:00" for hour in range(len(in_data))]
     }
 
 def empty_result():
