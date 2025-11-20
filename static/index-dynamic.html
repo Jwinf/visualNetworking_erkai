@@ -590,6 +590,223 @@
             color: white;
         }
         
+        /* 白名单管理样式 */
+        .whitelist-section {
+            width: 100%;
+        }
+        
+        .whitelist-form {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .whitelist-list {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .whitelist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .whitelist-header h3 {
+            margin: 0;
+            color: #495057;
+        }
+        
+        .whitelist-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .whitelist-table th,
+        .whitelist-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .whitelist-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .whitelist-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .whitelist-img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .action-cell {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .edit-btn {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #495057;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .modal-btn-primary {
+            background-color: #2575fc;
+            color: white;
+        }
+        
+        .modal-btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        /* 确认对话框样式 */
+        .confirm-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .confirm-content {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+        
+        .confirm-header {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .confirm-header h3 {
+            margin: 0;
+            color: #495057;
+        }
+        
+        .confirm-body {
+            padding: 20px;
+        }
+        
+        .confirm-footer {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
         /* 提示框样式 */
         .notification {
             position: fixed;
@@ -675,6 +892,11 @@
                 right: 20px;
                 max-width: none;
             }
+            
+            .whitelist-table {
+                display: block;
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
@@ -686,11 +908,63 @@
         </header>
         
         <div class="tab-menu">
-            <button class="tab-button active" data-tab="coordinate-tool">坐标选取工具</button>
-            <button class="tab-button" data-tab="dashboard">数据看板</button>
+            <button class="tab-button active" data-tab="dashboard">数据看板</button>
+            <button class="tab-button" data-tab="coordinate-tool">坐标选取工具</button>
+            <button class="tab-button" data-tab="whitelist">白名单管理</button>
         </div>
         
-        <div id="coordinate-tool" class="tab-content active">
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard">
+                <div class="dashboard-header">
+                    <h2>进出人数数据看板</h2>
+                    <p>可视化分析区域人员流动情况</p>
+                </div>
+                
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-in">1,247</div>
+                        <div class="stat-label">总进入人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-out">1,189</div>
+                        <div class="stat-label">总离开人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="net-flow">+58</div>
+                        <div class="stat-label">净流入人数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="peak-hour">14:00</div>
+                        <div class="stat-label">高峰期时段</div>
+                    </div>
+                </div>
+                
+                <div class="time-filter">
+                    <button class="time-btn active" data-period="day">今日</button>
+                    <button class="time-btn" data-period="week">本周</button>
+                    <button class="time-btn" data-period="month">本月</button>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="chart-container">
+                        <div class="chart-title">进出人数趋势</div>
+                        <canvas id="flow-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">进出人数对比</div>
+                        <canvas id="comparison-chart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-title">时段分布</div>
+                        <canvas id="hourly-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="coordinate-tool" class="tab-content">
             <div class="image-section">
                 <div class="image-controls">
                     <label for="file-input" class="file-upload-btn">
@@ -809,54 +1083,84 @@
             </div>
         </div>
         
-        <div id="dashboard" class="tab-content">
-            <div class="dashboard">
-                <div class="dashboard-header">
-                    <h2>进出人数数据看板</h2>
-                    <p>可视化分析区域人员流动情况</p>
+        <div id="whitelist" class="tab-content">
+            <div class="whitelist-section">
+                <div class="whitelist-form">
+                    <h3>添加白名单</h3>
+                    <div class="form-group">
+                        <label for="track-id">Track ID</label>
+                        <input type="text" id="track-id" placeholder="输入Track ID">
+                    </div>
+                    <div class="form-group">
+                        <label for="whitelist-image">图片</label>
+                        <input type="file" id="whitelist-image" accept="image/*">
+                    </div>
+                    <button id="add-whitelist-btn">添加白名单</button>
                 </div>
                 
-                <div class="stats-cards">
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-in">1,247</div>
-                        <div class="stat-label">总进入人数</div>
+                <div class="whitelist-list">
+                    <div class="whitelist-header">
+                        <h3>白名单列表</h3>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="total-out">1,189</div>
-                        <div class="stat-label">总离开人数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="net-flow">+58</div>
-                        <div class="stat-label">净流入人数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="peak-hour">14:00</div>
-                        <div class="stat-label">高峰期时段</div>
+                    <table class="whitelist-table">
+                        <thead>
+                            <tr>
+                                <th>Track ID</th>
+                                <th>图片</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="whitelist-table-body">
+                            <!-- 白名单数据将动态添加到这里 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑白名单模态框 -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑白名单</h3>
+                <button class="modal-close" id="edit-modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-track-id">Track ID</label>
+                    <input type="text" id="edit-track-id" placeholder="输入Track ID">
+                </div>
+                <div class="form-group">
+                    <label for="edit-whitelist-image">图片</label>
+                    <input type="file" id="edit-whitelist-image" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>当前图片</label>
+                    <div id="current-image-container">
+                        <img id="current-image" class="whitelist-img" src="" alt="当前图片">
                     </div>
                 </div>
-                
-                <div class="time-filter">
-                    <button class="time-btn active" data-period="day">今日</button>
-                    <button class="time-btn" data-period="week">本周</button>
-                    <button class="time-btn" data-period="month">本月</button>
-                </div>
-                
-                <div class="dashboard-content">
-                    <div class="chart-container">
-                        <div class="chart-title">进出人数趋势</div>
-                        <canvas id="flow-chart"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">进出人数对比</div>
-                        <canvas id="comparison-chart"></canvas>
-                    </div>
-                    
-                    <div class="chart-container">
-                        <div class="chart-title">时段分布</div>
-                        <canvas id="hourly-chart"></canvas>
-                    </div>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="edit-cancel-btn">取消</button>
+                <button class="modal-btn modal-btn-primary" id="edit-save-btn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除确认对话框 -->
+    <div class="confirm-dialog" id="delete-confirm">
+        <div class="confirm-content">
+            <div class="confirm-header">
+                <h3>确认删除</h3>
+            </div>
+            <div class="confirm-body">
+                <p>确定要删除这个白名单吗？此操作不可撤销。</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="modal-btn modal-btn-secondary" id="delete-cancel-btn">取消</button>
+                <button class="modal-btn modal-btn-primary" id="delete-confirm-btn">确认删除</button>
             </div>
         </div>
     </div>
@@ -1438,30 +1742,35 @@
                 try {
                     showNotification('正在加载数据...', 'info');
                     
+                    // 获取商家名称，用于serial_id参数
+                    const merchantName = document.getElementById('merchant-name').value.trim();
+                    const serialId = merchantName || 'default';
+                    
                     // 获取统计卡片数据
-                    const statsResponse = await fetch(`/api/dashboard/stats?period=${period}`);
-                    const statsData = await statsResponse.json();
-                    updateStatsCards(statsData);
+                    const statsResponse = await fetch(`/dashboard/stats?period=${period}&serial_id=${encodeURIComponent(serialId)}`);
                     
-                    // 获取趋势图表数据
-                    const flowResponse = await fetch(`/api/dashboard/flow?period=${period}`);
-                    const flowData = await flowResponse.json();
-                    updateFlowChart(flowData);
+                    if (!statsResponse.ok) {
+                        throw new Error(`HTTP error! status: ${statsResponse.status}`);
+                    }
                     
-                    // 获取对比图表数据
-                    const comparisonResponse = await fetch(`/api/dashboard/comparison?period=${period}`);
-                    const comparisonData = await comparisonResponse.json();
-                    updateComparisonChart(comparisonData);
+                    const data = await statsResponse.json();
                     
-                    // 获取时段分布数据
-                    const hourlyResponse = await fetch(`/api/dashboard/hourly?period=${period}`);
-                    const hourlyData = await hourlyResponse.json();
-                    updateHourlyChart(hourlyData);
+                    // 更新统计卡片
+                    updateStatsCards(data);
+                    
+                    // 更新趋势图表
+                    updateFlowChart(data);
+                    
+                    // 更新对比图表
+                    updateComparisonChart(data);
+                    
+                    // 更新时段分布图
+                    updateHourlyChart(data);
                     
                     showNotification('数据加载成功！', 'success');
                 } catch (error) {
                     console.error('获取数据失败:', error);
-                    showNotification('数据加载失败，请稍后重试', 'error');
+                    showNotification('数据加载失败，使用模拟数据', 'warning');
                     
                     // 如果后端不可用，使用模拟数据
                     useMockData(period);
@@ -1470,70 +1779,52 @@
             
             // 使用模拟数据（当后端不可用时）
             function useMockData(period) {
-                // 模拟数据
-                const mockData = {
-                    day: {
-                        stats: { totalIn: 1247, totalOut: 1189, netFlow: 58, peakHour: "14:00" },
-                        flow: {
-                            labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"],
-                            in: [65, 78, 90, 81, 56, 55, 120, 95, 80, 70, 60],
-                            out: [45, 62, 70, 65, 80, 75, 95, 85, 70, 65, 75]
-                        },
-                        comparison: {
-                            labels: ["入口A", "入口B", "入口C", "出口A", "出口B"],
-                            data: [320, 190, 280, 210, 170]
-                        },
-                        hourly: {
-                            labels: ["上午 (8-12)", "中午 (12-14)", "下午 (14-18)", "晚上 (18-22)"],
-                            data: [35, 25, 30, 10]
-                        }
-                    },
-                    week: {
-                        stats: { totalIn: 8342, totalOut: 8123, netFlow: 219, peakHour: "15:00" },
-                        flow: {
-                            labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日"],
-                            in: [450, 520, 480, 510, 490, 530, 500],
-                            out: [420, 480, 460, 490, 470, 510, 480]
-                        },
-                        comparison: {
-                            labels: ["入口A", "入口B", "入口C", "出口A", "出口B"],
-                            data: [2200, 1300, 1900, 1500, 1200]
-                        },
-                        hourly: {
-                            labels: ["上午 (8-12)", "中午 (12-14)", "下午 (14-18)", "晚上 (18-22)"],
-                            data: [30, 20, 35, 15]
-                        }
-                    },
-                    month: {
-                        stats: { totalIn: 35247, totalOut: 34891, netFlow: 356, peakHour: "14:30" },
-                        flow: {
-                            labels: ["第1周", "第2周", "第3周", "第4周"],
-                            in: [8500, 9200, 8800, 8700],
-                            out: [8400, 9100, 8700, 8600]
-                        },
-                        comparison: {
-                            labels: ["入口A", "入口B", "入口C", "出口A", "出口B"],
-                            data: [13200, 7800, 11400, 9000, 7200]
-                        },
-                        hourly: {
-                            labels: ["上午 (8-12)", "中午 (12-14)", "下午 (14-18)", "晚上 (18-22)"],
-                            data: [28, 22, 38, 12]
-                        }
-                    }
-                };
+                // 模拟数据 - 根据后端返回格式调整
+                let mockData;
                 
-                const data = mockData[period] || mockData.day;
-                updateStatsCards(data.stats);
-                updateFlowChart(data.flow);
-                updateComparisonChart(data.comparison);
-                updateHourlyChart(data.hourly);
+                if (period === 'day') {
+                    mockData = {
+                        totalIN: "1247",
+                        totalOut: "1189",
+                        netFlow: "58",
+                        peakHour: "14:00",
+                        in_data: [65, 78, 90, 81, 56, 55, 120, 95, 80, 70, 60, 45, 50, 65, 70, 85],
+                        out_data: [45, 62, 70, 65, 80, 75, 95, 85, 70, 65, 75, 60, 55, 60, 75, 80],
+                        labels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"]
+                    };
+                } else if (period === 'week') {
+                    mockData = {
+                        totalIN: "8234",
+                        totalOut: "7912",
+                        netFlow: "322",
+                        peakHour: "15:00",
+                        in_data: [450, 520, 480, 510, 490, 530, 500, 420, 380, 410, 430, 390, 350, 370, 400, 380],
+                        out_data: [420, 480, 460, 490, 470, 510, 480, 400, 360, 390, 410, 370, 330, 350, 380, 360],
+                        labels: ["周一", "周二", "周三", "周四", "周五", "周六", "周日", "周一", "周二", "周三", "周四", "周五", "周六", "周日", "周一", "周二"]
+                    };
+                } else if (period === 'month') {
+                    mockData = {
+                        totalIN: "35247",
+                        totalOut: "34891",
+                        netFlow: "356",
+                        peakHour: "14:30",
+                        in_data: [8500, 9200, 8800, 8700, 8900, 9100, 9000, 8700, 8500, 8600, 8800, 9000, 9200, 8900, 8700, 8500],
+                        out_data: [8400, 9100, 8700, 8600, 8800, 9000, 8900, 8600, 8400, 8500, 8700, 8900, 9100, 8800, 8600, 8400],
+                        labels: ["第1周", "第2周", "第3周", "第4周", "第5周", "第6周", "第7周", "第8周", "第9周", "第10周", "第11周", "第12周", "第13周", "第14周", "第15周", "第16周"]
+                    };
+                }
+                
+                updateStatsCards(mockData);
+                updateFlowChart(mockData);
+                updateComparisonChart(mockData);
+                updateHourlyChart(mockData);
             }
             
             // 更新统计卡片
             function updateStatsCards(data) {
-                document.getElementById('total-in').textContent = formatNumber(data.totalIn);
-                document.getElementById('total-out').textContent = formatNumber(data.totalOut);
-                document.getElementById('net-flow').textContent = formatNumber(data.netFlow, true);
+                document.getElementById('total-in').textContent = formatNumber(parseInt(data.totalIN));
+                document.getElementById('total-out').textContent = formatNumber(parseInt(data.totalOut));
+                document.getElementById('net-flow').textContent = formatNumber(parseInt(data.netFlow), true);
                 document.getElementById('peak-hour').textContent = data.peakHour;
             }
             
@@ -1541,8 +1832,8 @@
             function updateFlowChart(data) {
                 if (flowChart) {
                     flowChart.data.labels = data.labels;
-                    flowChart.data.datasets[0].data = data.in;
-                    flowChart.data.datasets[1].data = data.out;
+                    flowChart.data.datasets[0].data = data.in_data;
+                    flowChart.data.datasets[1].data = data.out_data;
                     flowChart.update();
                 }
             }
@@ -1550,19 +1841,91 @@
             // 更新进出人数对比图
             function updateComparisonChart(data) {
                 if (comparisonChart) {
-                    comparisonChart.data.labels = data.labels;
-                    comparisonChart.data.datasets[0].data = data.data;
+                    // 计算各时段进出人数对比
+                    const comparisonData = calculateComparisonData(data);
+                    comparisonChart.data.labels = comparisonData.labels;
+                    comparisonChart.data.datasets[0].data = comparisonData.data;
                     comparisonChart.update();
                 }
+            }
+            
+            // 计算对比图数据
+            function calculateComparisonData(data) {
+                // 将一天分为四个时段：上午、中午、下午、晚上
+                const timeSlots = [
+                    { name: "上午", start: 8, end: 12 },
+                    { name: "中午", start: 12, end: 14 },
+                    { name: "下午", start: 14, end: 18 },
+                    { name: "晚上", start: 18, end: 22 }
+                ];
+                
+                const labels = [];
+                const comparisonValues = [];
+                
+                timeSlots.forEach(slot => {
+                    let inSum = 0;
+                    let outSum = 0;
+                    
+                    // 计算该时段内的进出人数总和
+                    for (let i = slot.start - 8; i < slot.end - 8 && i < data.in_data.length; i++) {
+                        if (i >= 0) {
+                            inSum += data.in_data[i] || 0;
+                            outSum += data.out_data[i] || 0;
+                        }
+                    }
+                    
+                    labels.push(`${slot.name}进入`, `${slot.name}离开`);
+                    comparisonValues.push(inSum, outSum);
+                });
+                
+                return {
+                    labels: labels,
+                    data: comparisonValues
+                };
             }
             
             // 更新时段分布图
             function updateHourlyChart(data) {
                 if (hourlyChart) {
-                    hourlyChart.data.labels = data.labels;
-                    hourlyChart.data.datasets[0].data = data.data;
+                    // 分析时段分布数据
+                    const hourlyData = analyzeHourlyDistribution(data);
+                    hourlyChart.data.labels = hourlyData.labels;
+                    hourlyChart.data.datasets[0].data = hourlyData.data;
                     hourlyChart.update();
                 }
+            }
+            
+            // 分析时段分布数据
+            function analyzeHourlyDistribution(data) {
+                // 将一天分为四个时段
+                const timeSlots = [
+                    { name: "上午 (8-12)", start: 8, end: 12 },
+                    { name: "中午 (12-14)", start: 12, end: 14 },
+                    { name: "下午 (14-18)", start: 14, end: 18 },
+                    { name: "晚上 (18-22)", start: 18, end: 22 }
+                ];
+                
+                const labels = [];
+                const distribution = [];
+                
+                timeSlots.forEach(slot => {
+                    let total = 0;
+                    
+                    // 计算该时段内的总人数（进入+离开）
+                    for (let i = slot.start - 8; i < slot.end - 8 && i < data.in_data.length; i++) {
+                        if (i >= 0) {
+                            total += (data.in_data[i] || 0) + (data.out_data[i] || 0);
+                        }
+                    }
+                    
+                    labels.push(slot.name);
+                    distribution.push(total);
+                });
+                
+                return {
+                    labels: labels,
+                    data: distribution
+                };
             }
             
             // 格式化数字显示
@@ -1635,14 +1998,20 @@
                                 'rgba(37, 117, 252, 0.7)',
                                 'rgba(46, 213, 115, 0.7)',
                                 'rgba(255, 71, 87, 0.7)',
-                                'rgba(255, 165, 0, 0.7)'
+                                'rgba(255, 165, 0, 0.7)',
+                                'rgba(106, 17, 203, 0.5)',
+                                'rgba(37, 117, 252, 0.5)',
+                                'rgba(46, 213, 115, 0.5)'
                             ],
                             borderColor: [
                                 'rgba(106, 17, 203, 1)',
                                 'rgba(37, 117, 252, 1)',
                                 'rgba(46, 213, 115, 1)',
                                 'rgba(255, 71, 87, 1)',
-                                'rgba(255, 165, 0, 1)'
+                                'rgba(255, 165, 0, 1)',
+                                'rgba(106, 17, 203, 1)',
+                                'rgba(37, 117, 252, 1)',
+                                'rgba(46, 213, 115, 1)'
                             ],
                             borderWidth: 1
                         }]
@@ -1699,8 +2068,235 @@
                 fetchDashboardData('day');
             }
             
+            // 白名单管理功能
+            const trackIdInput = document.getElementById('track-id');
+            const whitelistImageInput = document.getElementById('whitelist-image');
+            const addWhitelistBtn = document.getElementById('add-whitelist-btn');
+            const whitelistTableBody = document.getElementById('whitelist-table-body');
+            
+            // 编辑模态框元素
+            const editModal = document.getElementById('edit-modal');
+            const editTrackIdInput = document.getElementById('edit-track-id');
+            const editWhitelistImageInput = document.getElementById('edit-whitelist-image');
+            const currentImage = document.getElementById('current-image');
+            const editModalClose = document.getElementById('edit-modal-close');
+            const editCancelBtn = document.getElementById('edit-cancel-btn');
+            const editSaveBtn = document.getElementById('edit-save-btn');
+            
+            // 删除确认对话框元素
+            const deleteConfirm = document.getElementById('delete-confirm');
+            const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+            const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+            
+            // 虚拟白名单数据
+            let whitelistData = JSON.parse(localStorage.getItem('whitelistData')) || [
+                {
+                    trackId: "TRK001",
+                    image: "https://via.placeholder.com/80x60?text=TRK001"
+                },
+                {
+                    trackId: "TRK002",
+                    image: "https://via.placeholder.com/80x60?text=TRK002"
+                },
+                {
+                    trackId: "TRK003",
+                    image: "https://via.placeholder.com/80x60?text=TRK003"
+                }
+            ];
+            
+            // 当前编辑的索引
+            let currentEditIndex = -1;
+            let currentDeleteIndex = -1;
+            
+            // 初始化白名单列表
+            function initializeWhitelist() {
+                renderWhitelistTable();
+            }
+            
+            // 渲染白名单表格
+            function renderWhitelistTable() {
+                whitelistTableBody.innerHTML = '';
+                
+                if (whitelistData.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = `
+                        <td colspan="3" style="text-align: center; padding: 20px;">
+                            暂无白名单数据
+                        </td>
+                    `;
+                    whitelistTableBody.appendChild(emptyRow);
+                    return;
+                }
+                
+                whitelistData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.trackId}</td>
+                        <td>
+                            <img src="${item.image}" alt="白名单图片" class="whitelist-img">
+                        </td>
+                        <td class="action-cell">
+                            <button class="action-btn edit-btn" data-index="${index}">
+                                <span>✏️</span> 编辑
+                            </button>
+                            <button class="action-btn delete-btn" data-index="${index}">
+                                <span>🗑️</span> 删除
+                            </button>
+                        </td>
+                    `;
+                    whitelistTableBody.appendChild(row);
+                });
+                
+                // 添加事件监听器
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        openEditModal(index);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        openDeleteConfirm(index);
+                    });
+                });
+            }
+            
+            // 打开编辑模态框
+            function openEditModal(index) {
+                currentEditIndex = index;
+                const item = whitelistData[index];
+                
+                // 填充表单
+                editTrackIdInput.value = item.trackId;
+                currentImage.src = item.image;
+                
+                // 显示模态框
+                editModal.style.display = 'flex';
+            }
+            
+            // 关闭编辑模态框
+            function closeEditModal() {
+                editModal.style.display = 'none';
+                editTrackIdInput.value = '';
+                editWhitelistImageInput.value = '';
+                currentEditIndex = -1;
+            }
+            
+            // 打开删除确认对话框
+            function openDeleteConfirm(index) {
+                currentDeleteIndex = index;
+                deleteConfirm.style.display = 'flex';
+            }
+            
+            // 关闭删除确认对话框
+            function closeDeleteConfirm() {
+                deleteConfirm.style.display = 'none';
+                currentDeleteIndex = -1;
+            }
+            
+            // 添加白名单
+            addWhitelistBtn.addEventListener('click', function() {
+                const trackId = trackIdInput.value.trim();
+                const imageFile = whitelistImageInput.files[0];
+                
+                if (!trackId) {
+                    showNotification('请输入Track ID', 'warning');
+                    return;
+                }
+                
+                if (!imageFile) {
+                    showNotification('请选择图片', 'warning');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const newItem = {
+                        trackId: trackId,
+                        image: event.target.result
+                    };
+                    
+                    whitelistData.push(newItem);
+                    localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
+                    
+                    renderWhitelistTable();
+                    
+                    // 清空表单
+                    trackIdInput.value = '';
+                    whitelistImageInput.value = '';
+                    
+                    showNotification('白名单添加成功', 'success');
+                };
+                
+                reader.readAsDataURL(imageFile);
+            });
+            
+            // 保存编辑
+            editSaveBtn.addEventListener('click', function() {
+                const trackId = editTrackIdInput.value.trim();
+                const imageFile = editWhitelistImageInput.files[0];
+                
+                if (!trackId) {
+                    showNotification('请输入Track ID', 'warning');
+                    return;
+                }
+                
+                if (imageFile) {
+                    // 如果有新图片，读取新图片
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        whitelistData[currentEditIndex].trackId = trackId;
+                        whitelistData[currentEditIndex].image = event.target.result;
+                        localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
+                        renderWhitelistTable();
+                        closeEditModal();
+                        showNotification('白名单编辑成功', 'success');
+                    };
+                    reader.readAsDataURL(imageFile);
+                } else {
+                    // 如果没有新图片，只更新trackId
+                    whitelistData[currentEditIndex].trackId = trackId;
+                    localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
+                    renderWhitelistTable();
+                    closeEditModal();
+                    showNotification('白名单编辑成功', 'success');
+                }
+            });
+            
+            // 删除白名单
+            deleteConfirmBtn.addEventListener('click', function() {
+                whitelistData.splice(currentDeleteIndex, 1);
+                localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
+                renderWhitelistTable();
+                closeDeleteConfirm();
+                showNotification('白名单删除成功', 'success');
+            });
+            
+            // 模态框关闭事件
+            editModalClose.addEventListener('click', closeEditModal);
+            editCancelBtn.addEventListener('click', closeEditModal);
+            deleteCancelBtn.addEventListener('click', closeDeleteConfirm);
+            
+            // 点击模态框外部关闭
+            window.addEventListener('click', function(event) {
+                if (event.target === editModal) {
+                    closeEditModal();
+                }
+                if (event.target === deleteConfirm) {
+                    closeDeleteConfirm();
+                }
+            });
+            
             // 初始化商家名称建议
             initializeMerchantSuggestions();
+            
+            // 初始化白名单
+            initializeWhitelist();
+            
+            // 初始化图表（页面加载时自动初始化）
+            initializeCharts();
         });
     </script>
 </body>
