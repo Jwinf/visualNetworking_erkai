@@ -1,6 +1,6 @@
 import redis
 import json
-from typing import Optional, Any, Dict, Union, List
+from typing import Optional, Any, Dict, Union, List, Set
 from const.colors_enum import Colors
 
 class Redis_util:
@@ -157,7 +157,21 @@ class Redis_util:
             操作是否成功
         """
         return self.set(key, value, ex=time)
-        
+    
+    def sadd(self, key: str, value: Any) -> bool:
+        result = self.redis_client.sadd(key, value)
+        return result >= 0
+    
+    def sismember(self, key: str, value: Any) -> bool:
+        result = self.redis_client.sismember(key, value)
+        return result > 0
+    
+    def srem(self, key: str, value: Any) -> bool:
+        result = self.redis_client.srem(str, value)
+        return result >= 0
+    
+    def smembers(self, key:str) -> Set:
+        return self.redis_client.smembers(str)
 
     def close(self):
         """关闭Redis连接"""
