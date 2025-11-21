@@ -3,7 +3,7 @@ from const.monotonic_type_enum import Monotonic
 from entity.merchant import Merchant
 from entity.statistic import Flow
 from app.extensions import redis_util
-from const.redis_key import IN_NUM, OUT_NUM, SERIAL_ID_MAP, DOOR_STATE
+from const.redis_key import IN_NUM, OUT_NUM, SERIAL_ID_MAP, DOOR_STATE, WHITE_LIST
 
 def counter(feature_map, merchant, flow):
     """
@@ -19,8 +19,8 @@ def counter(feature_map, merchant, flow):
     """
     for track_id in feature_map:
         # 白名单跳过
-        # continue
-
+        if redis_util.sismember(f'{merchant.serial_id}:{WHITE_LIST}', track_id):
+            continue
         op_list = get_point_x_list_by_state(feature_map, track_id, merchant.state)
         start_index, end_index, monotonic_type = find_monotonic_sequence(op_list)
         while end_index < len(op_list) - 1:
