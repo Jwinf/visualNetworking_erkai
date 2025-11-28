@@ -159,7 +159,7 @@ def is_point_above_line_vector(x1, y1, x2, y2, x3, y3, tolerance=1e-10):
         
         # 如果叉积 >= 0，点在线上或上方（对于标准的数学坐标系）
         # 注意：在计算机图形学中，y轴通常是向下的，所以符号可能需要调整
-        return cross_product >= -tolerance
+        return cross_product <= -tolerance
     else:
         return False
 
@@ -173,6 +173,6 @@ def is_point_below_line_vector(x1, y1, x2, y2, x3, y3, tolerance=1e-10):
     if min(x2, x3) <= x1 <= max(x2, x3):
         # 计算向量叉积
         cross_product = (x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)
-        return cross_product <= -tolerance
+        return cross_product >= -tolerance
     else:
         return False

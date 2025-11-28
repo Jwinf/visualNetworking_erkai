@@ -6,6 +6,7 @@
     <title>图片坐标选取工具与数据看板 - 商家名称集成版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* 样式保持不变，与原始代码相同 */
         * {
             margin: 0;
             padding: 0;
@@ -633,6 +634,7 @@
             padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
         }
         
         .whitelist-table th {
@@ -652,9 +654,14 @@
             border-radius: 4px;
         }
         
+        /* 调整操作列样式 */
         .action-cell {
             display: flex;
             gap: 8px;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 5px 0;
         }
         
         .action-btn {
@@ -667,6 +674,8 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            min-height: 32px;
+            justify-content: center;
         }
         
         .edit-btn {
@@ -896,6 +905,16 @@
             .whitelist-table {
                 display: block;
                 overflow-x: auto;
+            }
+            
+            .action-cell {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .action-btn {
+                width: 100%;
+                margin: 2px 0;
             }
         }
     </style>
@@ -1199,6 +1218,11 @@
                     // 如果切换到数据看板，初始化图表
                     if (tabId === 'dashboard') {
                         initializeCharts();
+                    }
+                    
+                    // 如果切换到白名单管理，加载白名单数据
+                    if (tabId === 'whitelist') {
+                        fetchWhitelistData();
                     }
                 });
             });
@@ -1747,7 +1771,7 @@
                     const serialId = merchantName || 'default';
                     
                     // 获取统计卡片数据
-                    const statsResponse = await fetch(`/dashboard/stats?period=${period}&serial_id=${encodeURIComponent(serialId)}`);
+                    const statsResponse = await fetch(`/erkai/visualnet/dashboard/stats?period=${period}&serial_id=${encodeURIComponent(serialId)}`);
                     
                     if (!statsResponse.ok) {
                         throw new Error(`HTTP error! status: ${statsResponse.status}`);
@@ -2088,19 +2112,19 @@
             const deleteCancelBtn = document.getElementById('delete-cancel-btn');
             const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
             
-            // 虚拟白名单数据
-            let whitelistData = JSON.parse(localStorage.getItem('whitelistData')) || [
+            // 模拟白名单数据（网络错误时使用）
+            const mockWhitelistData = [
                 {
-                    trackId: "TRK001",
-                    image: "https://via.placeholder.com/80x60?text=TRK001"
+                    track_id: "TRK001",
+                    image: "E:\\workplace\\VSCodeWorkplace\\visualNetworking_erkai\\static\\face01.png"
                 },
                 {
-                    trackId: "TRK002",
-                    image: "https://via.placeholder.com/80x60?text=TRK002"
+                    track_id: "TRK002",
+                    image: "E:\\workplace\\VSCodeWorkplace\\visualNetworking_erkai\\static\\face02.png"
                 },
                 {
-                    trackId: "TRK003",
-                    image: "https://via.placeholder.com/80x60?text=TRK003"
+                    track_id: "TRK003",
+                    image: "E:\\workplace\\VSCodeWorkplace\\visualNetworking_erkai\\static\\face03.png"
                 }
             ];
             
@@ -2108,13 +2132,39 @@
             let currentEditIndex = -1;
             let currentDeleteIndex = -1;
             
-            // 初始化白名单列表
-            function initializeWhitelist() {
-                renderWhitelistTable();
+            // 获取商家serial_id
+            function getSerialId() {
+                const merchantName = document.getElementById('merchant-name').value.trim();
+                return merchantName || 'default';
+            }
+            
+            // 从后端获取白名单数据
+            async function fetchWhitelistData() {
+                try {
+                    const serialId = getSerialId();
+                    const response = await fetch(`/erkai/door/whitelist?serial_id=${encodeURIComponent(serialId)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        renderWhitelistTable(data.data);
+                        showNotification('白名单数据加载成功！', 'success');
+                    } else {
+                        throw new Error(data.message || '获取白名单数据失败');
+                    }
+                } catch (error) {
+                    console.error('获取白名单数据失败:', error);
+                    showNotification('获取白名单数据失败，使用模拟数据', 'warning');
+                    renderWhitelistTable(mockWhitelistData);
+                }
             }
             
             // 渲染白名单表格
-            function renderWhitelistTable() {
+            function renderWhitelistTable(whitelistData) {
                 whitelistTableBody.innerHTML = '';
                 
                 if (whitelistData.length === 0) {
@@ -2131,7 +2181,7 @@
                 whitelistData.forEach((item, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.trackId}</td>
+                        <td>${item.track_id}</td>
                         <td>
                             <img src="${item.image}" alt="白名单图片" class="whitelist-img">
                         </td>
@@ -2151,25 +2201,24 @@
                 document.querySelectorAll('.edit-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const index = parseInt(this.getAttribute('data-index'));
-                        openEditModal(index);
+                        openEditModal(index, whitelistData[index]);
                     });
                 });
                 
                 document.querySelectorAll('.delete-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const index = parseInt(this.getAttribute('data-index'));
-                        openDeleteConfirm(index);
+                        openDeleteConfirm(index, whitelistData[index]);
                     });
                 });
             }
             
             // 打开编辑模态框
-            function openEditModal(index) {
+            function openEditModal(index, item) {
                 currentEditIndex = index;
-                const item = whitelistData[index];
                 
                 // 填充表单
-                editTrackIdInput.value = item.trackId;
+                editTrackIdInput.value = item.track_id;
                 currentImage.src = item.image;
                 
                 // 显示模态框
@@ -2185,8 +2234,9 @@
             }
             
             // 打开删除确认对话框
-            function openDeleteConfirm(index) {
+            function openDeleteConfirm(index, item) {
                 currentDeleteIndex = index;
+                currentDeleteItem = item;
                 deleteConfirm.style.display = 'flex';
             }
             
@@ -2194,12 +2244,14 @@
             function closeDeleteConfirm() {
                 deleteConfirm.style.display = 'none';
                 currentDeleteIndex = -1;
+                currentDeleteItem = null;
             }
             
             // 添加白名单
-            addWhitelistBtn.addEventListener('click', function() {
+            addWhitelistBtn.addEventListener('click', async function() {
                 const trackId = trackIdInput.value.trim();
                 const imageFile = whitelistImageInput.files[0];
+                const serialId = getSerialId();
                 
                 if (!trackId) {
                     showNotification('请输入Track ID', 'warning');
@@ -2211,68 +2263,133 @@
                     return;
                 }
                 
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const newItem = {
-                        trackId: trackId,
-                        image: event.target.result
+                try {
+                    // 读取图片为base64
+                    const imageBase64 = await readFileAsBase64(imageFile);
+                    
+                    // 准备请求数据
+                    const requestData = {
+                        track_id: trackId,
+                        serial_id: serialId,
+                        image: imageBase64
                     };
                     
-                    whitelistData.push(newItem);
-                    localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
+                    // 发送POST请求
+                    const response = await fetch('/erkai/door/whitelist', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    });
                     
-                    renderWhitelistTable();
+                    const result = await response.json();
                     
-                    // 清空表单
-                    trackIdInput.value = '';
-                    whitelistImageInput.value = '';
-                    
-                    showNotification('白名单添加成功', 'success');
-                };
-                
-                reader.readAsDataURL(imageFile);
+                    if (result.status === 'success') {
+                        showNotification('白名单添加成功', 'success');
+                        // 重新加载白名单数据
+                        fetchWhitelistData();
+                        
+                        // 清空表单
+                        trackIdInput.value = '';
+                        whitelistImageInput.value = '';
+                    } else {
+                        showNotification('白名单添加失败: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('添加白名单失败:', error);
+                    showNotification('添加白名单失败，请检查网络连接', 'error');
+                }
             });
             
             // 保存编辑
-            editSaveBtn.addEventListener('click', function() {
+            editSaveBtn.addEventListener('click', async function() {
                 const trackId = editTrackIdInput.value.trim();
                 const imageFile = editWhitelistImageInput.files[0];
+                const serialId = getSerialId();
                 
                 if (!trackId) {
                     showNotification('请输入Track ID', 'warning');
                     return;
                 }
                 
-                if (imageFile) {
-                    // 如果有新图片，读取新图片
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        whitelistData[currentEditIndex].trackId = trackId;
-                        whitelistData[currentEditIndex].image = event.target.result;
-                        localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
-                        renderWhitelistTable();
-                        closeEditModal();
-                        showNotification('白名单编辑成功', 'success');
+                try {
+                    // 准备请求数据
+                    const requestData = {
+                        track_id: trackId,
+                        serial_id: serialId
                     };
-                    reader.readAsDataURL(imageFile);
-                } else {
-                    // 如果没有新图片，只更新trackId
-                    whitelistData[currentEditIndex].trackId = trackId;
-                    localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
-                    renderWhitelistTable();
-                    closeEditModal();
-                    showNotification('白名单编辑成功', 'success');
+                    
+                    // 如果有新图片，读取并添加到请求数据
+                    if (imageFile) {
+                        requestData.image = await readFileAsBase64(imageFile);
+                    }
+                    
+                    // 发送PUT请求
+                    const response = await fetch('/erkai/door/whitelist', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        showNotification('白名单编辑成功', 'success');
+                        // 重新加载白名单数据
+                        fetchWhitelistData();
+                        closeEditModal();
+                    } else {
+                        showNotification('白名单编辑失败: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('编辑白名单失败:', error);
+                    showNotification('编辑白名单失败，请检查网络连接', 'error');
                 }
             });
             
             // 删除白名单
-            deleteConfirmBtn.addEventListener('click', function() {
-                whitelistData.splice(currentDeleteIndex, 1);
-                localStorage.setItem('whitelistData', JSON.stringify(whitelistData));
-                renderWhitelistTable();
-                closeDeleteConfirm();
-                showNotification('白名单删除成功', 'success');
+            deleteConfirmBtn.addEventListener('click', async function() {
+                try {
+                    const serialId = getSerialId();
+                    const trackId = currentDeleteItem.track_id;
+                    
+                    // 发送DELETE请求
+                    const response = await fetch(`/erkai/door/whitelist?track_id=${encodeURIComponent(trackId)}&serial_id=${encodeURIComponent(serialId)}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        showNotification('白名单删除成功', 'success');
+                        // 重新加载白名单数据
+                        fetchWhitelistData();
+                        closeDeleteConfirm();
+                    } else {
+                        showNotification('白名单删除失败: ' + result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('删除白名单失败:', error);
+                    showNotification('删除白名单失败，请检查网络连接', 'error');
+                }
             });
+            
+            // 读取文件为base64
+            function readFileAsBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        resolve(event.target.result);
+                    };
+                    reader.onerror = function(error) {
+                        reject(error);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
             
             // 模态框关闭事件
             editModalClose.addEventListener('click', closeEditModal);
@@ -2292,8 +2409,8 @@
             // 初始化商家名称建议
             initializeMerchantSuggestions();
             
-            // 初始化白名单
-            initializeWhitelist();
+            // 初始化白名单（页面加载时自动加载）
+            fetchWhitelistData();
             
             // 初始化图表（页面加载时自动初始化）
             initializeCharts();
