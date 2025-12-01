@@ -1,5 +1,10 @@
 # json file
 *.json
 
+# videos file
+*.mp4
+*.avi
+*.rar
+
 # pycache file
 **/__pycache__/*
